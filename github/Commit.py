@@ -46,6 +46,8 @@ import github.PaginatedList
 class Commit(github.GithubObject.CompletableGithubObject):
     """
     This class represents Commits. The reference can be found here https://docs.github.com/en/rest/reference/git#commits
+
+    OpenAPI schema: /components/schemas/git-commit
     """
 
     def __repr__(self):
