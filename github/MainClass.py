@@ -73,6 +73,15 @@ from . import (
 from .Requester import Requester
 
 
+# These constants used to be defined here, the moved into Consts: https://github.com/PyGithub/PyGithub/pull/1986
+# To keep user code working, we redefine them here
+# TODO: Remove when moving to version 2.0
+DEFAULT_BASE_URL = Consts.DEFAULT_BASE_URL
+DEFAULT_STATUS_URL = Consts.DEFAULT_STATUS_URL
+DEFAULT_TIMEOUT = Consts.DEFAULT_TIMEOUT
+DEFAULT_PER_PAGE = Consts.DEFAULT_PER_PAGE
+
+
 class Github:
     """
     This is the main class you instantiate to access the Github API v3. Optional parameters allow different authentication methods.
