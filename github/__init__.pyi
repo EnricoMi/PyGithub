@@ -7,6 +7,7 @@ from .GithubException import BadCredentialsException as BadCredentialsException
 from .GithubException import BadUserAgentException as BadUserAgentException
 from .GithubException import GithubException as GithubException
 from .GithubException import IncompletableObject as IncompletableObject
+from .GithubException import JwtExpiredException as JwtExpiredException
 from .GithubException import RateLimitExceededException as RateLimitExceededException
 from .GithubException import TwoFactorException as TwoFactorException
 from .GithubException import UnknownObjectException as UnknownObjectException

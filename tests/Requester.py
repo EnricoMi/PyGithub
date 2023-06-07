@@ -115,6 +115,24 @@ class Requester(Framework.TestCase):
             '401 {"message": "Bad credentials"}',
         )
 
+    def testShouldCreateJwtExpiredException(self):
+        exc = self.g._Github__requester.__createException(
+            401,
+            {"header": "value"},
+            {"message": "'Expiration time' claim ('exp') must be a numeric value "
+                        "representing the future time at which the assertion expires"}
+        )
+        self.assertException(
+            exc,
+            github.JwtExpiredException,
+            401,
+            {"message": "'Expiration time' claim ('exp') must be a numeric value "
+                        "representing the future time at which the assertion expires"},
+            {"header": "value"},
+            """401 {"message": "'Expiration time' claim ('exp') must be a numeric value """ +
+            'representing the future time at which the assertion expires"}',
+        )
+
     def testShouldCreateTwoFactorException(self):
         exc = self.g._Github__requester.__createException(
             401,

@@ -457,6 +457,12 @@ class Requester:
         if status == 401 and message == "bad credentials":
             cls = GithubException.BadCredentialsException
         elif (
+            status == 401 and
+            message == "'expiration time' claim ('exp') must be a numeric value "
+                       "representing the future time at which the assertion expires"
+        ):
+            cls = GithubException.JwtExpiredException
+        elif (
             status == 401
             and Consts.headerOTP in headers
             and re.match(r".*required.*", headers[Consts.headerOTP])

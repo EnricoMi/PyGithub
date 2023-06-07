@@ -82,6 +82,12 @@ class BadCredentialsException(GithubException):
     """
 
 
+class JwtExpiredException(BadCredentialsException):
+    """
+    Exception raised in case of bad credentials due to an expired JWT
+    """
+
+
 class UnknownObjectException(GithubException):
     """
     Exception raised when a non-existing object is requested (when Github API replies with a 404 HTML status)
