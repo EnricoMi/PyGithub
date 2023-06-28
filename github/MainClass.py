@@ -68,6 +68,7 @@ from . import (
     AuthenticatedUser,
     Consts,
     GithubApp,
+    GithubRetry,
     GitignoreTemplate,
     HookDelivery,
     HookDescription,
@@ -83,6 +84,9 @@ class Github:
     This is the main class you instantiate to access the Github API v3. Optional parameters allow different authentication methods.
     """
 
+    default_retry = GithubRetry.GithubRetry()
+
+    # keep non-deprecated arguments in-sync with Requester
     # v2: remove login_or_token, password, jwt and app_auth
     # v2: move auth to the front of arguments
     # v2: add * before first argument so all arguments must be named,
@@ -95,24 +99,26 @@ class Github:
         app_auth=None,
         base_url=Consts.DEFAULT_BASE_URL,
         timeout=Consts.DEFAULT_TIMEOUT,
-        user_agent="PyGithub/Python",
+        user_agent=Consts.DEFAULT_USER_AGENT,
         per_page=Consts.DEFAULT_PER_PAGE,
         verify=True,
-        retry=None,
+        retry=default_retry,
         pool_size=None,
         auth=None,
     ):
         """
         :param login_or_token: string deprecated, use auth=github.Auth.Login(...) or auth=github.Auth.Token(...) instead
         :param password: string deprecated, use auth=github.Auth.Login(...) instead
-        :param jwt: string deprecated, use auth=github.Auth.AppAuthToken(...) instead
+        :param jwt: string deprecated, use auth=github.Auth.AppAuth(...) or auth=github.Auth.AppAuthToken(...) instead
         :param app_auth: github.AppAuthentication deprecated, use auth=github.Auth.AppInstallationAuth(...) instead
         :param base_url: string
         :param timeout: integer
         :param user_agent: string
         :param per_page: int
         :param verify: boolean or string
-        :param retry: int or urllib3.util.retry.Retry object
+        :param retry: int or urllib3.util.retry.Retry object,
+                      defaults to github.Github.default_retry,
+                      set to None to disable retries
         :param pool_size: int
         :param auth: authentication method
         """
@@ -123,6 +129,8 @@ class Github:
         assert isinstance(base_url, str), base_url
         assert isinstance(timeout, int), timeout
         assert user_agent is None or isinstance(user_agent, str), user_agent
+        assert isinstance(per_page, int), per_page
+        assert isinstance(verify, (bool, str)), verify
         assert (
             retry is None
             or isinstance(retry, int)

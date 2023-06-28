@@ -34,6 +34,7 @@
 #                                                                              #
 ################################################################################
 
+import contextlib
 import io
 import json
 import os
@@ -344,6 +345,12 @@ class BasicTestCase(unittest.TestCase):
         ]
         self.assertSequenceEqual(actual, expected)
 
+    @contextlib.contextmanager
+    def ignoreWarning(self, category=Warning, module=""):
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=category, module=module)
+            yield
+
     def __openFile(self, mode):
         for (_, _, functionName, _) in traceback.extract_stack():
             if (
@@ -400,18 +407,17 @@ class TestCase(BasicTestCase):
         github.Requester.Requester.setDebugFlag(True)
         github.Requester.Requester.setOnCheckMe(self.getFrameChecker())
 
+        self.g = self.get_github(self.retry, self.pool_size)
+
+    def get_github(self, retry, pool_size):
         if self.tokenAuthMode:
-            self.g = github.Github(
-                auth=self.oauth_token, retry=self.retry, pool_size=self.pool_size
+            return github.Github(
+                auth=self.oauth_token, retry=retry, pool_size=pool_size
             )
         elif self.jwtAuthMode:
-            self.g = github.Github(
-                auth=self.jwt, retry=self.retry, pool_size=self.pool_size
-            )
+            return github.Github(auth=self.jwt, retry=retry, pool_size=pool_size)
         else:
-            self.g = github.Github(
-                auth=self.login, retry=self.retry, pool_size=self.pool_size
-            )
+            return github.Github(auth=self.login, retry=retry, pool_size=pool_size)
 
 
 def activateRecordMode():  # pragma no cover (Function useful only when recording new tests, not used during automated tests)

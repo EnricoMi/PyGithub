@@ -344,6 +344,7 @@ class Requester:
     __hostname: str
     __authorizationHeader: Optional[str]
 
+    # keep arguments in-sync with github.MainClass and GithubIntegration
     def __init__(
         self,
         auth: Optional["Auth"],
@@ -351,7 +352,7 @@ class Requester:
         timeout: int,
         user_agent: str,
         per_page: int,
-        verify: bool,
+        verify: Union[bool, str],
         retry: Optional[Union[int, Retry]],
         pool_size: Optional[int],
     ):
@@ -395,6 +396,24 @@ class Requester:
             self.__auth.withRequester(self)
 
     @property
+    def kwargs(self):
+        """
+        Returns arguments required to recreate this Requester with Requester.__init__, as well as
+        with MainClass.__init__ and GithubIntegration.__init__.
+        :return:
+        """
+        return dict(
+            auth=self.__auth,
+            base_url=self.__base_url,
+            timeout=self.__timeout,
+            user_agent=self.__userAgent,
+            per_page=self.per_page,
+            verify=self.__verify,
+            retry=self.__retry,
+            pool_size=self.__pool_size,
+        )
+
+    @property
     def base_url(self) -> str:
         return self.__base_url
 
@@ -406,18 +425,11 @@ class Requester:
         """
         Create a new requester instance with identical configuration but the given authentication method.
         :param auth: authentication method
-        :return: new Reqester implementation
+        :return: new Requester implementation
         """
-        return Requester(
-            auth=auth,
-            base_url=self.__base_url,
-            timeout=self.__timeout,
-            user_agent=self.__userAgent,
-            per_page=self.per_page,
-            verify=self.__verify,
-            retry=self.__retry,
-            pool_size=self.__pool_size,
-        )
+        kwargs = self.kwargs
+        kwargs.update(auth=auth)
+        return Requester(**kwargs)
 
     def requestJsonAndCheck(
         self,
@@ -472,7 +484,7 @@ class Requester:
     ) -> Tuple[Dict[str, Any], Any]:
         data = self.__structuredFromJson(output)
         if status >= 400:
-            raise self.__createException(status, responseHeaders, data)
+            raise self.createException(status, responseHeaders, data)
         return responseHeaders, data
 
     def __customConnection(
@@ -507,36 +519,60 @@ class Requester:
                     )
         return cnx
 
-    def __createException(
-        self,
+    @classmethod
+    def createException(
+        cls,
         status: int,
         headers: Dict[str, Any],
         output: Dict[str, Any],
     ) -> Any:
         message = output.get("message", "").lower() if output is not None else ""
 
-        cls = GithubException.GithubException
+        exc = GithubException.GithubException
         if status == 401 and message == "bad credentials":
-            cls = GithubException.BadCredentialsException
+            exc = GithubException.BadCredentialsException
         elif (
             status == 401
             and Consts.headerOTP in headers
             and re.match(r".*required.*", headers[Consts.headerOTP])
         ):
-            cls = GithubException.TwoFactorException
+            exc = GithubException.TwoFactorException
         elif status == 403 and message.startswith(
             "missing or invalid user agent string"
         ):
-            cls = GithubException.BadUserAgentException
-        elif status == 403 and (
-            message.startswith("api rate limit exceeded")
-            or message.endswith("please wait a few minutes before you try again.")
-        ):
-            cls = GithubException.RateLimitExceededException
+            exc = GithubException.BadUserAgentException
+        elif status == 403 and cls.isRateLimitError(message):
+            exc = GithubException.RateLimitExceededException
         elif status == 404 and message == "not found":
-            cls = GithubException.UnknownObjectException
+            exc = GithubException.UnknownObjectException
 
-        return cls(status, output, headers)
+        return exc(status, output, headers)
+
+    @classmethod
+    def isRateLimitError(cls, message: str) -> bool:
+        return cls.isPrimaryRateLimitError(message) or cls.isSecondaryRateLimitError(
+            message
+        )
+
+    @classmethod
+    def isPrimaryRateLimitError(cls, message: str) -> bool:
+        if not message:
+            return False
+
+        message = message.lower()
+        return message.startswith("api rate limit exceeded")
+
+    @classmethod
+    def isSecondaryRateLimitError(cls, message: str) -> bool:
+        if not message:
+            return False
+
+        message = message.lower()
+        return (
+            message.startswith("you have exceeded a secondary rate limit")
+            or message.endswith("please retry your request again later.")
+            or message.endswith("please wait a few minutes before you try again.")
+        )
 
     def __structuredFromJson(self, data: str) -> Any:
         if len(data) == 0:
