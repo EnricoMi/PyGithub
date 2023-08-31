@@ -1148,7 +1148,7 @@ class Repository(CompletableGithubObject):
 
         headers, data = self._requester.requestJsonAndCheck("POST", f"{self.url}/autolinks", input=post_parameters)
 
-        return github.Autolink.Autolink(self._requester, headers, data, completed=True)
+        return github.Autolink.Autolink(self._requester, headers, data)
 
     def create_git_blob(self, content: str, encoding: str) -> GitBlob:
         """
@@ -1680,7 +1680,7 @@ class Repository(CompletableGithubObject):
             headers, data = self._requester.requestJsonAndCheck(
                 "POST", f"{self.url}/security-advisories", input=post_parameters
             )
-        return github.RepositoryAdvisory.RepositoryAdvisory(self._requester, headers, data, completed=True)
+        return github.RepositoryAdvisory.RepositoryAdvisory(self._requester, headers, data)
 
     def create_repository_dispatch(self, event_type: str, client_payload: Opt[dict[str, Any]] = NotSet) -> bool:
         """
@@ -1977,16 +1977,22 @@ class Repository(CompletableGithubObject):
         """
         return PaginatedList(github.NamedUser.NamedUser, self._requester, f"{self.url}/assignees", None)
 
-    def get_branch(self, branch: str) -> Branch:
+    def get_branch(self, branch: str, lazy: Opt[bool] = NotSet) -> Branch:
         """
         :calls: `GET /repos/{owner}/{repo}/branches/{branch} <https://docs.github.com/en/rest/reference/repos#get-a-branch>`_
         :param branch: string
+        :param lazy: bool
         :rtype: :class:`github.Branch.Branch`
         """
         assert isinstance(branch, str), branch
         branch = urllib.parse.quote(branch)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/branches/{branch}")
-        return github.Branch.Branch(self._requester, headers, data, completed=True)
+        url = f"{self.url}/branches/{branch}"
+        return github.Branch.Branch(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def rename_branch(self, branch: str | Branch, new_name: str) -> bool:
         """
@@ -2046,15 +2052,21 @@ class Repository(CompletableGithubObject):
             url_parameters,
         )
 
-    def get_comment(self, id: int) -> CommitComment:
+    def get_comment(self, id: int, lazy: Opt[bool] = NotSet) -> CommitComment:
         """
         :calls: `GET /repos/{owner}/{repo}/comments/{id} <https://docs.github.com/en/rest/reference/repos#comments>`_
         :param id: integer
+        :param lazy: bool
         :rtype: :class:`github.CommitComment.CommitComment`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/comments/{id}")
-        return github.CommitComment.CommitComment(self._requester, headers, data, completed=True)
+        url = f"{self.url}/comments/{id}"
+        return github.CommitComment.CommitComment(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_comments(self) -> PaginatedList[CommitComment]:
         """
@@ -2068,16 +2080,21 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_commit(self, sha: str) -> Commit:
+    def get_commit(self, sha: str, lazy: Opt[bool] = NotSet) -> Commit:
         """
         :calls: `GET /repos/{owner}/{repo}/commits/{sha} <https://docs.github.com/en/rest/reference/repos#commits>`_
         :param sha: string
+        :param lazy: bool
         :rtype: :class:`github.Commit.Commit`
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/commits/{sha}")
-        return github.Commit.Commit(self._requester, headers, data, completed=True)
+        return github.Commit.Commit(
+            self._requester,
+            url=f"{self.url}/commits/{sha}",
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_commits(
         self,
@@ -2193,19 +2210,23 @@ class Repository(CompletableGithubObject):
             headers={"Accept": Consts.deploymentEnhancementsPreview},
         )
 
-    def get_deployment(self, id_: int) -> Deployment:
+    def get_deployment(self, id_: int, lazy: Opt[bool] = NotSet) -> Deployment:
         """
         :calls: `GET /repos/{owner}/{repo}/deployments/{deployment_id} <https://docs.github.com/en/rest/reference/repos#deployments>`_
         :param: id_: int
+        :param: lazy: bool
         :rtype: :class:`github.Deployment.Deployment`
         """
         assert isinstance(id_, int), id_
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"{self.url}/deployments/{id_}",
-            headers={"Accept": Consts.deploymentEnhancementsPreview},
+        url = f"{self.url}/deployments/{id_}"
+        accept = Consts.deploymentEnhancementsPreview
+        return github.Deployment.Deployment(
+            self._requester,
+            url=url,
+            accept=accept,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
         )
-        return github.Deployment.Deployment(self._requester, headers, data, completed=True)
 
     def create_deployment(
         self,
@@ -2275,7 +2296,7 @@ class Repository(CompletableGithubObject):
         """
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/traffic/popular/referrers")
         if isinstance(data, list):
-            return [github.Referrer.Referrer(self._requester, headers, item, completed=True) for item in data]
+            return [github.Referrer.Referrer(self._requester, headers, item) for item in data]
 
     def get_top_paths(self) -> None | list[Path]:
         """
@@ -2284,7 +2305,7 @@ class Repository(CompletableGithubObject):
         """
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/traffic/popular/paths")
         if isinstance(data, list):
-            return [github.Path.Path(self._requester, headers, item, completed=True) for item in data]
+            return [github.Path.Path(self._requester, headers, item) for item in data]
 
     def get_views_traffic(self, per: Opt[str] = NotSet) -> None | dict[str, int | list[View]]:
         """
@@ -2299,7 +2320,7 @@ class Repository(CompletableGithubObject):
             "GET", f"{self.url}/traffic/views", parameters=url_parameters
         )
         if (isinstance(data, dict)) and ("views" in data) and (isinstance(data["views"], list)):
-            data["views"] = [github.View.View(self._requester, headers, item, completed=True) for item in data["views"]]
+            data["views"] = [github.View.View(self._requester, headers, item) for item in data["views"]]
             return data
 
     def get_clones_traffic(self, per: Opt[str] = NotSet) -> dict[str, int | list[Clones]] | None:
@@ -2314,9 +2335,7 @@ class Repository(CompletableGithubObject):
             "GET", f"{self.url}/traffic/clones", parameters=url_parameters
         )
         if (isinstance(data, dict)) and ("clones" in data) and (isinstance(data["clones"], list)):
-            data["clones"] = [
-                github.Clones.Clones(self._requester, headers, item, completed=True) for item in data["clones"]
-            ]
+            data["clones"] = [github.Clones.Clones(self._requester, headers, item) for item in data["clones"]]
             return data
 
     def get_projects(self, state: Opt[str] = NotSet) -> PaginatedList[Project]:
@@ -2398,7 +2417,7 @@ class Repository(CompletableGithubObject):
         )
 
         return {
-            "content": github.ContentFile.ContentFile(self._requester, headers, data["content"], completed=False),
+            "content": github.ContentFile.ContentFile(self._requester, headers, data["content"], do_complete=False),
             "commit": github.Commit.Commit(self._requester, headers, data["commit"], completed=True),
         }
 
@@ -2416,15 +2435,23 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_repository_advisory(self, ghsa: str) -> github.RepositoryAdvisory.RepositoryAdvisory:
+    def get_repository_advisory(
+        self, ghsa: str, lazy: Opt[bool] = NotSet
+    ) -> github.RepositoryAdvisory.RepositoryAdvisory:
         """
         :calls: `GET /repos/{owner}/{repo}/security-advisories/{ghsa} <https://docs.github.com/en/rest/security-advisories/repository-advisories>`_
         :param ghsa: string
+        :param lazy: bool
         :rtype: :class:`github.RepositoryAdvisory.RepositoryAdvisory`
         """
         ghsa = urllib.parse.quote(ghsa)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/security-advisories/{ghsa}")
-        return github.RepositoryAdvisory.RepositoryAdvisory(self._requester, headers, data, completed=True)
+        url = f"{self.url}/security-advisories/{ghsa}"
+        return github.RepositoryAdvisory.RepositoryAdvisory(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def update_file(
         self,
@@ -2566,15 +2593,21 @@ class Repository(CompletableGithubObject):
             url_parameters,
         )
 
-    def get_download(self, id: int) -> Download:
+    def get_download(self, id: int, lazy: Opt[bool] = NotSet) -> Download:
         """
         :calls: `GET /repos/{owner}/{repo}/downloads/{id} <https://docs.github.com/en/rest/reference/repos>`_
         :param id: integer
+        :param lazy: bool
         :rtype: :class:`github.Download.Download`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/downloads/{id}")
-        return github.Download.Download(self._requester, headers, data, completed=True)
+        url = f"{self.url}/downloads/{id}"
+        return github.Download.Download(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_downloads(self) -> PaginatedList[Download]:
         """
@@ -2630,32 +2663,45 @@ class Repository(CompletableGithubObject):
         )
         return Repository(self._requester, headers, data, completed=True)
 
-    def get_git_blob(self, sha: str) -> GitBlob:
+    def get_git_blob(self, sha: str, lazy: Opt[bool] = NotSet) -> GitBlob:
         """
         :calls: `GET /repos/{owner}/{repo}/git/blobs/{sha} <https://docs.github.com/en/rest/reference/git#blobs>`_
         :param sha: string
+        :param lazy: bool
         :rtype: :class:`github.GitBlob.GitBlob`
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/git/blobs/{sha}")
-        return github.GitBlob.GitBlob(self._requester, headers, data, completed=True)
+        url = f"{self.url}/git/blobs/{sha}"
+        return github.GitBlob.GitBlob(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
-    def get_git_commit(self, sha: str) -> GitCommit:
+    def get_git_commit(self, sha: str, lazy: Opt[bool] = NotSet) -> GitCommit:
         """
         :calls: `GET /repos/{owner}/{repo}/git/commits/{sha} <https://docs.github.com/en/rest/reference/git#commits>`_
         :param sha: string
+        :param lazy: bool
         :rtype: :class:`github.GitCommit.GitCommit`
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/git/commits/{sha}")
-        return github.GitCommit.GitCommit(self._requester, headers, data, completed=True)
+        url = f"{self.url}/git/commits/{sha}"
+        return github.GitCommit.GitCommit(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
-    def get_git_ref(self, ref: str) -> GitRef:
+    def get_git_ref(self, ref: str, lazy: Opt[bool] = NotSet) -> GitRef:
         """
         :calls: `GET /repos/{owner}/{repo}/git/refs/{ref} <https://docs.github.com/en/rest/reference/git#references>`_
         :param ref: string
+        :param lazy: bool
         :rtype: :class:`github.GitRef.GitRef`
         """
         prefix = "/git/refs/"
@@ -2663,8 +2709,13 @@ class Repository(CompletableGithubObject):
             prefix = "/git/"
         assert isinstance(ref, str), ref
         ref = urllib.parse.quote(ref)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}{prefix}{ref}")
-        return github.GitRef.GitRef(self._requester, headers, data, completed=True)
+        url = f"{self.url}{prefix}{ref}"
+        return github.GitRef.GitRef(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_git_refs(self) -> PaginatedList[GitRef]:
         """
@@ -2687,16 +2738,22 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_git_tag(self, sha: str) -> GitTag:
+    def get_git_tag(self, sha: str, lazy: Opt[bool] = NotSet) -> GitTag:
         """
         :calls: `GET /repos/{owner}/{repo}/git/tags/{sha} <https://docs.github.com/en/rest/reference/git#tags>`_
         :param sha: string
+        :param lazy: bool
         :rtype: :class:`github.GitTag.GitTag`
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/git/tags/{sha}")
-        return github.GitTag.GitTag(self._requester, headers, data, completed=True)
+        url = f"{self.url}/git/tags/{sha}"
+        return github.GitTag.GitTag(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_git_tree(self, sha: str, recursive: Opt[bool] = NotSet) -> GitTree:
         """
@@ -2717,15 +2774,21 @@ class Repository(CompletableGithubObject):
         )
         return github.GitTree.GitTree(self._requester, headers, data, completed=True)
 
-    def get_hook(self, id: int) -> Hook:
+    def get_hook(self, id: int, lazy: Opt[bool] = NotSet) -> Hook:
         """
         :calls: `GET /repos/{owner}/{repo}/hooks/{id} <https://docs.github.com/en/rest/reference/repos#webhooks>`_
         :param id: integer
+        :param lazy: bool
         :rtype: :class:`github.Hook.Hook`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/hooks/{id}")
-        return github.Hook.Hook(self._requester, headers, data, completed=True)
+        url = f"{self.url}/hooks/{id}"
+        return github.Hook.Hook(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_hooks(self) -> PaginatedList[Hook]:
         """
@@ -2746,7 +2809,7 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck(
             "GET", f"{self.url}/hooks/{hook_id}/deliveries/{delivery_id}"
         )
-        return github.HookDelivery.HookDelivery(self._requester, headers, data, completed=True)
+        return github.HookDelivery.HookDelivery(self._requester, headers, data)
 
     def get_hook_deliveries(self, hook_id: int) -> PaginatedList[github.HookDelivery.HookDeliverySummary]:
         """
@@ -2763,15 +2826,21 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_issue(self, number: int) -> Issue:
+    def get_issue(self, number: int, lazy: Opt[bool] = NotSet) -> Issue:
         """
         :calls: `GET /repos/{owner}/{repo}/issues/{number} <https://docs.github.com/en/rest/reference/issues>`_
         :param number: integer
+        :param lazy: bool
         :rtype: :class:`github.Issue.Issue`
         """
         assert isinstance(number, int), number
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/issues/{number}")
-        return github.Issue.Issue(self._requester, headers, data, completed=True)
+        url = f"{self.url}/issues/{number}"
+        return github.Issue.Issue(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_issues(
         self,
@@ -2869,19 +2938,23 @@ class Repository(CompletableGithubObject):
             url_parameters,
         )
 
-    def get_issues_event(self, id: int) -> IssueEvent:
+    def get_issues_event(self, id: int, lazy: Opt[bool] = NotSet) -> IssueEvent:
         """
         :calls: `GET /repos/{owner}/{repo}/issues/events/{id} <https://docs.github.com/en/rest/reference/issues#events>`_
         :param id: integer
+        :param lazy: bool
         :rtype: :class:`github.IssueEvent.IssueEvent`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"{self.url}/issues/events/{id}",
-            headers={"Accept": Consts.mediaTypeLockReasonPreview},
+        url = f"{self.url}/issues/events/{id}"
+        accept = Consts.mediaTypeLockReasonPreview
+        return github.IssueEvent.IssueEvent(
+            self._requester,
+            url=url,
+            accept=accept,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
         )
-        return github.IssueEvent.IssueEvent(self._requester, headers, data, completed=True)
 
     def get_issues_events(self) -> PaginatedList[IssueEvent]:
         """
@@ -2896,15 +2969,21 @@ class Repository(CompletableGithubObject):
             headers={"Accept": Consts.mediaTypeLockReasonPreview},
         )
 
-    def get_key(self, id: int) -> RepositoryKey:
+    def get_key(self, id: int, lazy: Opt[bool] = NotSet) -> RepositoryKey:
         """
         :calls: `GET /repos/{owner}/{repo}/keys/{id} <https://docs.github.com/en/rest/reference/repos#deploy-keys>`_
         :param id: integer
+        :param lazy: bool
         :rtype: :class:`github.RepositoryKey.RepositoryKey`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/keys/{id}")
-        return github.RepositoryKey.RepositoryKey(self._requester, headers, data, completed=True)
+        url = f"{self.url}/keys/{id}"
+        return github.RepositoryKey.RepositoryKey(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_keys(self) -> PaginatedList[RepositoryKey]:
         """
@@ -2918,15 +2997,21 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_label(self, name: str) -> Label:
+    def get_label(self, name: str, lazy: Opt[bool] = NotSet) -> Label:
         """
         :calls: `GET /repos/{owner}/{repo}/labels/{name} <https://docs.github.com/en/rest/reference/issues#labels>`_
         :param name: string
+        :param lazy: bool
         :rtype: :class:`github.Label.Label`
         """
         assert isinstance(name, str), name
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/labels/{urllib.parse.quote(name)}")
-        return github.Label.Label(self._requester, headers, data, completed=True)
+        url = f"{self.url}/labels/{urllib.parse.quote(name)}"
+        return github.Label.Label(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_labels(self) -> PaginatedList[Label]:
         """
@@ -2952,15 +3037,21 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/license")
         return github.ContentFile.ContentFile(self._requester, headers, data, completed=True)
 
-    def get_milestone(self, number: int) -> Milestone:
+    def get_milestone(self, number: int, lazy: Opt[bool] = NotSet) -> Milestone:
         """
         :calls: `GET /repos/{owner}/{repo}/milestones/{number} <https://docs.github.com/en/rest/reference/issues#milestones>`_
         :param number: integer
+        :param lazy: bool
         :rtype: :class:`github.Milestone.Milestone`
         """
         assert isinstance(number, int), number
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/milestones/{number}")
-        return github.Milestone.Milestone(self._requester, headers, data, completed=True)
+        url = f"{self.url}/milestones/{number}"
+        return github.Milestone.Milestone(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_milestones(
         self,
@@ -3012,15 +3103,21 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/secrets/public-key")
         return github.PublicKey.PublicKey(self._requester, headers, data, completed=True)
 
-    def get_pull(self, number: int) -> PullRequest:
+    def get_pull(self, number: int, lazy: Opt[bool] = NotSet) -> PullRequest:
         """
         :calls: `GET /repos/{owner}/{repo}/pulls/{number} <https://docs.github.com/en/rest/reference/pulls>`_
         :param number: integer
+        :param lazy: bool
         :rtype: :class:`github.PullRequest.PullRequest`
         """
         assert isinstance(number, int), number
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/pulls/{number}")
-        return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
+        url = f"{self.url}/pulls/{number}"
+        return github.PullRequest.PullRequest(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_pulls(
         self,
@@ -3128,7 +3225,7 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(runner_id, int), runner_id
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/runners/{runner_id}")
-        return github.SelfHostedActionsRunner.SelfHostedActionsRunner(self._requester, headers, data, completed=True)
+        return github.SelfHostedActionsRunner.SelfHostedActionsRunner(self._requester, headers, data)
 
     def get_self_hosted_runners(self) -> PaginatedList[SelfHostedActionsRunner]:
         """
@@ -3188,8 +3285,7 @@ class Repository(CompletableGithubObject):
             return None
         else:
             return [
-                github.StatsContributor.StatsContributor(self._requester, headers, attributes, completed=True)
-                for attributes in data
+                github.StatsContributor.StatsContributor(self._requester, headers, attributes) for attributes in data
             ]
 
     def get_stats_commit_activity(self) -> list[StatsCommitActivity] | None:
@@ -3202,7 +3298,7 @@ class Repository(CompletableGithubObject):
             return None
         else:
             return [
-                github.StatsCommitActivity.StatsCommitActivity(self._requester, headers, attributes, completed=True)
+                github.StatsCommitActivity.StatsCommitActivity(self._requester, headers, attributes)
                 for attributes in data
             ]
 
@@ -3216,7 +3312,7 @@ class Repository(CompletableGithubObject):
             return None
         else:
             return [
-                github.StatsCodeFrequency.StatsCodeFrequency(self._requester, headers, attributes, completed=True)
+                github.StatsCodeFrequency.StatsCodeFrequency(self._requester, headers, attributes)
                 for attributes in data
             ]
 
@@ -3229,7 +3325,7 @@ class Repository(CompletableGithubObject):
         if not data:
             return None
         else:
-            return github.StatsParticipation.StatsParticipation(self._requester, headers, data, completed=True)
+            return github.StatsParticipation.StatsParticipation(self._requester, headers, data)
 
     def get_stats_punch_card(self) -> StatsPunchCard | None:
         """
@@ -3240,7 +3336,7 @@ class Repository(CompletableGithubObject):
         if not data:
             return None
         else:
-            return github.StatsPunchCard.StatsPunchCard(self._requester, headers, data, completed=True)
+            return github.StatsPunchCard.StatsPunchCard(self._requester, headers, data)
 
     def get_subscribers(self) -> PaginatedList[NamedUser]:
         """
@@ -3263,19 +3359,34 @@ class Repository(CompletableGithubObject):
         """
         return PaginatedList(github.GitRelease.GitRelease, self._requester, f"{self.url}/releases", None)
 
-    def get_release(self, id: int | str) -> GitRelease:
+    def get_release(self, id: int | str, lazy: Opt[bool] = NotSet) -> GitRelease:
         """
         :calls: `GET /repos/{owner}/{repo}/releases/{id} <https://docs.github.com/en/rest/reference/repos#get-a-release>`_
         :param id: int (release id), str (tag name)
+        :param lazy: bool
         :rtype: None or :class:`github.GitRelease.GitRelease`
         """
         if isinstance(id, int):
-            headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/{id}")
-            return github.GitRelease.GitRelease(self._requester, headers, data, completed=True)
+            url = f"{self.url}/releases/{id}"
+            return github.GitRelease.GitRelease(
+                self._requester,
+                url=url,
+                do_complete=not (
+                    is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy
+                ),
+                transitive_lazy=self._transitiveLazy,
+            )
         elif isinstance(id, str):
             id = urllib.parse.quote(id)
-            headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/tags/{id}")
-            return github.GitRelease.GitRelease(self._requester, headers, data, completed=True)
+            url = f"{self.url}/releases/tags/{id}"
+            return github.GitRelease.GitRelease(
+                self._requester,
+                url=url,
+                do_complete=not (
+                    is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy
+                ),
+                transitive_lazy=self._transitiveLazy,
+            )
 
     def get_latest_release(self) -> GitRelease:
         """
@@ -3324,17 +3435,22 @@ class Repository(CompletableGithubObject):
             list_item="workflows",
         )
 
-    def get_workflow(self, id_or_file_name: str | int) -> Workflow:
+    def get_workflow(self, id_or_file_name: str | int, lazy: Opt[bool] = NotSet) -> Workflow:
         """
         :calls: `GET /repos/{owner}/{repo}/actions/workflows/{workflow_id} <https://docs.github.com/en/rest/reference/actions#workflows>`_
         :param id_or_file_name: int or string. Can be either a workflow ID or a filename.
-
+        :param lazy: bool
         :rtype: :class:`github.Workflow.Workflow`
         """
         assert isinstance(id_or_file_name, (int, str)), id_or_file_name
         id_or_file_name = urllib.parse.quote(str(id_or_file_name))
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/workflows/{id_or_file_name}")
-        return github.Workflow.Workflow(self._requester, headers, data, completed=True)
+        url = f"{self.url}/actions/workflows/{id_or_file_name}"
+        return github.Workflow.Workflow(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_workflow_runs(
         self,
@@ -3391,16 +3507,21 @@ class Repository(CompletableGithubObject):
             list_item="workflow_runs",
         )
 
-    def get_workflow_run(self, id_: int) -> WorkflowRun:
+    def get_workflow_run(self, id_: int, lazy: Opt[bool] = NotSet) -> WorkflowRun:
         """
         :calls: `GET /repos/{owner}/{repo}/actions/runs/{run_id} <https://docs.github.com/en/rest/reference/actions#workflow-runs>`_
         :param id_: int
-
+        :param lazy: bool
         :rtype: :class:`github.WorkflowRun.WorkflowRun`
         """
         assert isinstance(id_, int)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/runs/{id_}")
-        return github.WorkflowRun.WorkflowRun(self._requester, headers, data, completed=True)
+        url = f"{self.url}/actions/runs/{id_}"
+        return github.WorkflowRun.WorkflowRun(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def has_in_assignees(self, assignee: str | NamedUser) -> bool:
         """
@@ -3693,20 +3814,23 @@ class Repository(CompletableGithubObject):
         )
         return github.CheckSuite.CheckSuite(self._requester, headers, data, completed=True)
 
-    def get_check_suite(self, check_suite_id: int) -> CheckSuite:
+    def get_check_suite(self, check_suite_id: int, lazy: Opt[bool] = NotSet) -> CheckSuite:
         """
         :calls: `GET /repos/{owner}/{repo}/check-suites/{check_suite_id} <https://docs.github.com/en/rest/reference/checks#get-a-check-suite>`_
         :param check_suite_id: int
+        :param lazy: bool
         :rtype: :class:`github.CheckSuite.CheckSuite`
         """
         assert isinstance(check_suite_id, int), check_suite_id
-        requestHeaders = {"Accept": "application/vnd.github.v3+json"}
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"{self.url}/check-suites/{check_suite_id}",
-            headers=requestHeaders,
+        url = f"{self.url}/check-suites/{check_suite_id}"
+        accept = "application/vnd.github.v3+json"
+        return github.CheckSuite.CheckSuite(
+            self._requester,
+            url=url,
+            accept=accept,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
         )
-        return github.CheckSuite.CheckSuite(self._requester, headers, data, completed=True)
 
     def update_check_suites_preferences(
         self, auto_trigger_checks: list[dict[str, bool | int]]
@@ -3722,7 +3846,7 @@ class Repository(CompletableGithubObject):
             f"{self.url}/check-suites/preferences",
             input={"auto_trigger_checks": auto_trigger_checks},
         )
-        return github.RepositoryPreferences.RepositoryPreferences(self._requester, headers, data, completed=True)
+        return github.RepositoryPreferences.RepositoryPreferences(self._requester, headers, data)
 
     def _hub(self, mode: str, event: str, callback: str, secret: Opt[str]) -> None:
         assert isinstance(mode, str), mode
@@ -3744,11 +3868,16 @@ class Repository(CompletableGithubObject):
     def _identity(self) -> str:
         return f"{self.owner.login}/{self.name}"
 
-    def get_release_asset(self, id: int) -> GitReleaseAsset:
+    def get_release_asset(self, id: int, lazy: Opt[bool] = NotSet) -> GitReleaseAsset:
         assert isinstance(id, (int)), id
 
-        resp_headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/assets/{id}")
-        return github.GitReleaseAsset.GitReleaseAsset(self._requester, resp_headers, data, completed=True)
+        url = f"{self.url}/releases/assets/{id}"
+        return github.GitReleaseAsset.GitReleaseAsset(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def create_check_run(
         self,
@@ -3813,15 +3942,21 @@ class Repository(CompletableGithubObject):
         )
         return github.CheckRun.CheckRun(self._requester, headers, data, completed=True)
 
-    def get_check_run(self, check_run_id: int) -> CheckRun:
+    def get_check_run(self, check_run_id: int, lazy: Opt[bool] = NotSet) -> CheckRun:
         """
         :calls: `GET /repos/{owner}/{repo}/check-runs/{check_run_id} <https://docs.github.com/en/rest/reference/checks#get-a-check-run>`_
         :param check_run_id: int
+        :param lazy: bool
         :rtype: :class:`github.CheckRun.CheckRun`
         """
         assert isinstance(check_run_id, int), check_run_id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/check-runs/{check_run_id}")
-        return github.CheckRun.CheckRun(self._requester, headers, data, completed=True)
+        url = f"{self.url}/check-runs/{check_run_id}"
+        return github.CheckRun.CheckRun(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_artifacts(self, name: Opt[str] = NotSet) -> PaginatedList[Artifact]:
         """
@@ -3842,16 +3977,21 @@ class Repository(CompletableGithubObject):
             list_item="artifacts",
         )
 
-    def get_artifact(self, artifact_id: int) -> Artifact:
+    def get_artifact(self, artifact_id: int, lazy: Opt[bool] = NotSet) -> Artifact:
         """
         :calls: `GET /repos/{owner}/{repo}/actions/artifacts/{artifact_id} <https://docs.github.com/en/rest/actions/artifacts#get-an-artifact>`_
         :param artifact_id: int
+        :param lazy: bool
         :rtype: :class:`github.Artifact.Artifact`
         """
         assert isinstance(artifact_id, int), artifact_id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/artifacts/{artifact_id}")
-
-        return github.Artifact.Artifact(self._requester, headers, data, completed=True)
+        url = f"{self.url}/actions/artifacts/{artifact_id}"
+        return github.Artifact.Artifact(
+            self._requester,
+            url=url,
+            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
+            transitive_lazy=self._transitiveLazy,
+        )
 
     def get_codescan_alerts(self) -> PaginatedList[CodeScanAlert]:
         """
@@ -4007,7 +4147,7 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(number, int), number
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/dependabot/alerts/{number}")
-        return github.DependabotAlert.DependabotAlert(self._requester, headers, data, completed=True)
+        return github.DependabotAlert.DependabotAlert(self._requester, headers, data)
 
     def update_dependabot_alert(
         self, number: int, state: str, dismissed_reason: Opt[str] = NotSet, dismissed_comment: Opt[str] = NotSet
@@ -4040,7 +4180,7 @@ class Repository(CompletableGithubObject):
                 {"state": state, "dismissed_reason": dismissed_reason, "dismissed_comment": dismissed_comment}
             ),
         )
-        return github.DependabotAlert.DependabotAlert(self._requester, headers, data, completed=True)
+        return github.DependabotAlert.DependabotAlert(self._requester, headers, data)
 
     def _initAttributes(self) -> None:
         self._allow_auto_merge: Attribute[bool] = NotSet
