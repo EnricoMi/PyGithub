@@ -72,7 +72,7 @@ import github.NamedUser
 import github.Topic
 from github import Consts
 from github.GithubIntegration import GithubIntegration
-from github.GithubObject import GithubObject, NotSet, Opt, is_defined
+from github.GithubObject import GithubObject, NotSet, Opt, is_defined, is_optional, is_undefined
 from github.GithubRetry import GithubRetry
 from github.HookDelivery import HookDelivery, HookDeliverySummary
 from github.HookDescription import HookDescription
@@ -132,6 +132,7 @@ class Github:
         seconds_between_requests: float | None = Consts.DEFAULT_SECONDS_BETWEEN_REQUESTS,
         seconds_between_writes: float | None = Consts.DEFAULT_SECONDS_BETWEEN_WRITES,
         auth: github.Auth.Auth | None = None,
+        lazy: Opt[bool] = NotSet,
     ) -> None:
         """
         :param login_or_token: string deprecated, use auth=github.Auth.Login(...) or auth=github.Auth.Token(...) instead
@@ -150,6 +151,7 @@ class Github:
         :param seconds_between_requests: float
         :param seconds_between_writes: float
         :param auth: authentication method
+        :param lazy: objects created from this instance are lazy, as well as objects created from those, and so on
         """
 
         assert login_or_token is None or isinstance(login_or_token, str), login_or_token
@@ -165,6 +167,9 @@ class Github:
         assert seconds_between_requests is None or seconds_between_requests >= 0
         assert seconds_between_writes is None or seconds_between_writes >= 0
         assert auth is None or isinstance(auth, github.Auth.Auth), auth
+        assert is_optional(lazy, bool), lazy
+
+        self.__lazy = lazy
 
         if password is not None:
             warnings.warn(
@@ -270,7 +275,7 @@ class Github:
         :calls: `GET /rate_limit <https://docs.github.com/en/rest/reference/rate-limit>`_
         """
         headers, data = self.__requester.requestJsonAndCheck("GET", "/rate_limit")
-        return RateLimit(self.__requester, headers, data["resources"], True)
+        return RateLimit(self.__requester, headers, data["resources"])
 
     @property
     def oauth_scopes(self) -> list[str] | None:
@@ -310,10 +315,11 @@ class Github:
         """
         assert login is NotSet or isinstance(login, str), login
         if login is NotSet:
-            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, {}, {"url": "/user"}, completed=False)
+            url = "/user"
+            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url, do_complete=False)
         else:
-            headers, data = self.__requester.requestJsonAndCheck("GET", f"/users/{login}")
-            return github.NamedUser.NamedUser(self.__requester, headers, data, completed=True)
+            url = f"/users/{login}"
+            return github.NamedUser.NamedUser(self.__requester, url=url, do_complete=True)
 
     def get_user_by_id(self, user_id: int) -> NamedUser:
         """
@@ -368,17 +374,25 @@ class Github:
         # There is no native "/enterprises/{enterprise}" api, so this function is a hub for apis that start with "/enterprise/{enterprise}".
         return github.Enterprise.Enterprise(self.__requester, enterprise)
 
-    def get_repo(self, full_name_or_id: int | str, lazy: bool = False) -> Repository:
+    def get_repo(self, full_name_or_id: int | str, lazy: Opt[bool] = NotSet) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <https://docs.github.com/en/rest/reference/repos>`_ or `GET /repositories/{id} <https://docs.github.com/en/rest/reference/repos>`_
         """
         assert isinstance(full_name_or_id, (str, int)), full_name_or_id
         url_base = "/repositories/" if isinstance(full_name_or_id, int) else "/repos/"
         url = f"{url_base}{full_name_or_id}"
-        if lazy:
-            return github.Repository.Repository(self.__requester, {}, {"url": url}, completed=False)
-        headers, data = self.__requester.requestJsonAndCheck("GET", url)
-        return github.Repository.Repository(self.__requester, headers, data, completed=True)
+        do_complete = (
+            is_defined(lazy)
+            and not lazy
+            or is_undefined(lazy)
+            and is_defined(self.__lazy)
+            and not self.__lazy
+            or is_undefined(lazy)
+            and is_undefined(self.__lazy)
+        )
+        return github.Repository.Repository(
+            self.__requester, url=url, do_complete=do_complete, transitive_lazy=self.__lazy
+        )
 
     def get_repos(
         self,
@@ -699,7 +713,7 @@ class Github:
         """
         assert isinstance(name, str), name
         headers, attributes = self.__requester.requestJsonAndCheck("GET", f"/hooks/{name}")
-        return HookDescription(self.__requester, headers, attributes, completed=True)
+        return HookDescription(self.__requester, headers, attributes)
 
     def get_hooks(self) -> list[HookDescription]:
         """
@@ -707,7 +721,7 @@ class Github:
         :rtype: list of :class:`github.HookDescription.HookDescription`
         """
         headers, data = self.__requester.requestJsonAndCheck("GET", "/hooks")
-        return [HookDescription(self.__requester, headers, attributes, completed=True) for attributes in data]
+        return [HookDescription(self.__requester, headers, attributes) for attributes in data]
 
     def get_hook_delivery(self, hook_id: int, delivery_id: int) -> HookDelivery:
         """
@@ -719,7 +733,7 @@ class Github:
         assert isinstance(hook_id, int), hook_id
         assert isinstance(delivery_id, int), delivery_id
         headers, attributes = self.__requester.requestJsonAndCheck("GET", f"/hooks/{hook_id}/deliveries/{delivery_id}")
-        return HookDelivery(self.__requester, headers, attributes, completed=True)
+        return HookDelivery(self.__requester, headers, attributes)
 
     def get_hook_deliveries(self, hook_id: int) -> list[HookDeliverySummary]:
         """
@@ -729,7 +743,7 @@ class Github:
         """
         assert isinstance(hook_id, int), hook_id
         headers, data = self.__requester.requestJsonAndCheck("GET", f"/hooks/{hook_id}/deliveries")
-        return [HookDeliverySummary(self.__requester, headers, attributes, completed=True) for attributes in data]
+        return [HookDeliverySummary(self.__requester, headers, attributes) for attributes in data]
 
     def get_gitignore_templates(self) -> list[str]:
         """
@@ -744,7 +758,7 @@ class Github:
         """
         assert isinstance(name, str), name
         headers, attributes = self.__requester.requestJsonAndCheck("GET", f"/gitignore/templates/{name}")
-        return github.GitignoreTemplate.GitignoreTemplate(self.__requester, headers, attributes, completed=True)
+        return github.GitignoreTemplate.GitignoreTemplate(self.__requester, headers, attributes)
 
     def get_emojis(self) -> dict[str, str]:
         """
@@ -797,7 +811,6 @@ class Github:
             self.__requester,
             headers={},
             attributes={"client_id": client_id, "client_secret": client_secret},
-            completed=False,
         )
 
     def get_app(self, slug: Opt[str] = NotSet) -> GithubApp:

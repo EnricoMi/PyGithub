@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Iterable
 
 import github.NamedUser
 from github.CWE import CWE
-from github.GithubObject import Attribute, NonCompletableGithubObject, NotSet, Opt
+from github.GithubObject import Attribute, CompletableGithubObject, NotSet, Opt
 from github.RepositoryAdvisoryCredit import Credit, RepositoryAdvisoryCredit
 from github.RepositoryAdvisoryCreditDetailed import RepositoryAdvisoryCreditDetailed
 from github.RepositoryAdvisoryVulnerability import AdvisoryVulnerability, RepositoryAdvisoryVulnerability
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from github.NamedUser import NamedUser
 
 
-class RepositoryAdvisory(NonCompletableGithubObject):
+class RepositoryAdvisory(CompletableGithubObject):
     """
     This class represents a RepositoryAdvisory.
     The reference can be found here https://docs.github.com/en/rest/security-advisories/repository-advisories

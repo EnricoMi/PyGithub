@@ -41,7 +41,7 @@ import github.RequiredStatusChecks
 from github import Consts
 from github.GithubObject import (
     Attribute,
-    NonCompletableGithubObject,
+    CompletableGithubObject,
     NotSet,
     Opt,
     is_defined,
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     from github.Team import Team
 
 
-class Branch(NonCompletableGithubObject):
+class Branch(CompletableGithubObject):
     """
     This class represents Branches. The reference can be found here https://docs.github.com/en/rest/reference/repos#branches
     """
@@ -70,27 +70,34 @@ class Branch(NonCompletableGithubObject):
 
     @property
     def commit(self) -> Commit:
+        self._completeIfNotSet(self._commit)
         return self._commit.value
 
     @property
     def name(self) -> str:
+        self._completeIfNotSet(self._name)
         return self._name.value
 
     @property
     def protected(self) -> bool:
+        self._completeIfNotSet(self._protected)
         return self._protected.value
 
     @property
     def protection_url(self) -> str:
+        self._completeIfNotSet(self._protection_url)
         return self._protection_url.value
 
     def _initAttributes(self) -> None:
+        self._url: Attribute[str] = github.GithubObject.NotSet
         self._commit: Attribute[Commit] = github.GithubObject.NotSet
         self._name: Attribute[str] = github.GithubObject.NotSet
         self._protection_url: Attribute[str] = github.GithubObject.NotSet
         self._protected: Attribute[bool] = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        if "url" in attributes:  # pragma no branch
+            self._url = self._makeStringAttribute(attributes["url"])
         if "commit" in attributes:  # pragma no branch
             self._commit = self._makeClassAttribute(github.Commit.Commit, attributes["commit"])
         if "name" in attributes:  # pragma no branch

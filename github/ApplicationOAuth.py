@@ -51,11 +51,10 @@ class ApplicationOAuth(NonCompletableGithubObject):
         requester: Requester,
         headers: dict[str, Any],
         attributes: Any,
-        completed: bool,
     ) -> None:
         # this object requires a request without authentication
         requester = requester.withAuth(auth=None)
-        super().__init__(requester, headers, attributes, completed)
+        super().__init__(requester, headers, attributes)
 
     def __repr__(self) -> str:
         return self.get__repr__({"client_id": self._client_id.value})
@@ -124,7 +123,6 @@ class ApplicationOAuth(NonCompletableGithubObject):
             requester=self._requester,
             headers=headers,
             attributes=data,
-            completed=False,
         )
 
     def get_app_user_auth(self, token: AccessToken) -> AppUserAuth:
@@ -165,7 +163,6 @@ class ApplicationOAuth(NonCompletableGithubObject):
             requester=self._requester,
             headers=headers,
             attributes=data,
-            completed=False,
         )
 
     @staticmethod
