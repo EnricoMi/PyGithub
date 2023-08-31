@@ -200,7 +200,6 @@ class GithubIntegration:
             requester=self.__requester,
             headers=headers,
             attributes=response,
-            completed=True,
         )
 
     @deprecated.deprecated(
@@ -237,7 +236,6 @@ class GithubIntegration:
             requester=self.__requester,
             headers=headers,
             attributes=response,
-            completed=True,
         )
 
     @deprecated.deprecated("Use get_repo_installation")
