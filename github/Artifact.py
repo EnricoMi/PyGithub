@@ -25,13 +25,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 import github.WorkflowRun
-from github.GithubObject import Attribute, NonCompletableGithubObject, NotSet
+from github.GithubObject import Attribute, CompletableGithubObject, NotSet
 
 if TYPE_CHECKING:
     from github.WorkflowRun import WorkflowRun
 
 
-class Artifact(NonCompletableGithubObject):
+class Artifact(CompletableGithubObject):
     """
     This class represents an Artifact of Github Run
     """

@@ -37,7 +37,7 @@ class Enterprise(NonCompletableGithubObject):
         requester: Requester,
         enterprise: str,
     ):
-        super().__init__(requester, {}, {"enterprise": enterprise, "url": f"/enterprises/{enterprise}"}, True)
+        super().__init__(requester, {}, {"enterprise": enterprise, "url": f"/enterprises/{enterprise}"})
 
     def _initAttributes(self) -> None:
         self._enterprise: Attribute[str] = NotSet

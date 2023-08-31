@@ -354,6 +354,17 @@ https
 GET
 api.github.com
 None
+/repos/jacquev6/PyGithub/branches/master
+{'If-None-Match': '"4363de8c7d91e18a17cec5a495ab091a"', 'User-Agent': 'PyGithub/Python', 'Authorization': 'Basic login_and_password_removed'}
+None
+304
+[('status', '304 Not Modified'), ('x-ratelimit-remaining', '4867'), ('x-content-type-options', 'nosniff'), ('access-control-expose-headers', 'ETag, Link, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes'), ('x-github-request-id', 'f88ab8d2-9b5a-4283-8001-fdd72ca23ee2'), ('access-control-allow-credentials', 'true'), ('vary', 'Accept-Encoding'), ('server', 'GitHub.com'), ('last-modified', 'Fri, 06 Sep 2013 12:51:22 GMT'), ('x-ratelimit-limit', '5000'), ('etag', '"654d1a29abe3a61b096e8bffbc61c162"'), ('cache-control', 'private, max-age=60, s-maxage=60'), ('date', 'Fri, 06 Sep 2013 15:06:00 GMT'), ('access-control-allow-origin', '*'), ('x-ratelimit-reset', '1378482241')]
+
+
+https
+GET
+api.github.com
+None
 /repos/jacquev6/PyGithub/commits/1292bf0e22c796e91cc3d6e24b544aece8c21f2a
 {'If-None-Match': '"91582e2dc24ad5461e61062c01b32969"', 'User-Agent': 'PyGithub/Python', 'Authorization': 'Basic login_and_password_removed', 'If-Modified-Since': 'Wed, 09 May 2012 16:22:33 GMT'}
 None

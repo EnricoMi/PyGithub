@@ -37,8 +37,9 @@
 # along with PyGithub. If not, see <http://www.gnu.org/licenses/>.             #
 #                                                                              #
 ################################################################################
-
+import abc
 import typing
+from abc import ABC
 from datetime import datetime, timezone
 from operator import itemgetter
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, Union
@@ -115,12 +116,12 @@ class _BadAttribute(Attribute):
 
     @property
     def value(self) -> Any:
-        raise BadAttributeException(self.__value, self.__expectedType, self.__exception)
+        raise BadAttributeException(self.__value, self.__expectedType, self.__exception) from self.__exception
 
 
 # v3: add * to edit function of all GithubObject implementations,
 #     this allows to rename attributes and maintain the order of attributes
-class GithubObject:
+class GithubObject(abc.ABC):
     """
     Base class for all classes representing objects returned by the API.
     """
@@ -140,7 +141,6 @@ class GithubObject:
         requester: "Requester",
         headers: Dict[str, Union[str, int]],
         attributes: Any,
-        completed: bool,
     ):
         self._requester = requester
         self._initAttributes()
@@ -163,7 +163,8 @@ class GithubObject:
         """
         :type: dict
         """
-        self._completeIfNeeded()
+        if isinstance(self, CompletableGithubObject):
+            self._completeIfNeeded()
         return self._rawData
 
     @property
@@ -171,7 +172,8 @@ class GithubObject:
         """
         :type: dict
         """
-        self._completeIfNeeded()
+        if isinstance(self, CompletableGithubObject):
+            self._completeIfNeeded()
         return self._headers
 
     @staticmethod
@@ -240,7 +242,7 @@ class GithubObject:
         return GithubObject.__makeTransformedAttribute(
             value,
             dict,
-            lambda value: klass(self._requester, self._headers, value, completed=False),
+            lambda value: klass(self._requester, self._headers, value),
         )
 
     @staticmethod
@@ -265,9 +267,7 @@ class GithubObject:
 
     def _makeListOfClassesAttribute(self, klass: Type[T_gh], value: Any) -> Attribute[List[T_gh]]:
         if isinstance(value, list) and all(isinstance(element, dict) for element in value):
-            return _ValuedAttribute(
-                [klass(self._requester, self._headers, element, completed=False) for element in value]
-            )
+            return _ValuedAttribute([klass(self._requester, self._headers, element) for element in value])
         else:
             return _BadAttribute(value, [dict])
 
@@ -276,14 +276,18 @@ class GithubObject:
         klass: Type[T_gh],
         value: Dict[
             str,
-            Union[int, Dict[str, Union[str, int, None]], Dict[str, Union[str, int]]],
+            Union[int, Dict[str, Any]],
         ],
     ) -> Attribute[Dict[str, T_gh]]:
         if isinstance(value, dict) and all(
             isinstance(key, str) and isinstance(element, dict) for key, element in value.items()
         ):
             return _ValuedAttribute(
-                {key: klass(self._requester, self._headers, element, completed=False) for key, element in value.items()}
+                {
+                    key: klass(self._requester, self._headers, element)
+                    for key, element in value.items()
+                    if isinstance(element, dict)
+                }
             )
         else:
             return _BadAttribute(value, {str: dict})
@@ -327,25 +331,63 @@ class GithubObject:
     def _useAttributes(self, attributes: Any) -> None:
         raise NotImplementedError("BUG: Not Implemented _useAttributes")
 
-    def _completeIfNeeded(self) -> None:
-        raise NotImplementedError("BUG: Not Implemented _completeIfNeeded")
 
-
-class NonCompletableGithubObject(GithubObject):
-    def _completeIfNeeded(self) -> None:
-        pass
-
-
-class CompletableGithubObject(GithubObject):
+class NonCompletableGithubObject(GithubObject, ABC):
     def __init__(
         self,
         requester: "Requester",
         headers: Dict[str, Union[str, int]],
         attributes: Dict[str, Any],
-        completed: bool,
     ):
-        super().__init__(requester, headers, attributes, completed)
+        super().__init__(requester, headers, attributes)
+
+
+class CompletableGithubObject(GithubObject, abc.ABC):
+    def __init__(
+        self,
+        requester: "Requester",
+        headers: Optional[Dict[str, Union[str, int]]] = None,
+        attributes: Optional[Dict[str, Any]] = None,
+        completed: bool = False,
+        *,
+        url: Optional[str] = None,
+        accept: Optional[str] = None,
+        do_complete: bool = False,
+        transitive_lazy: Opt[bool] = NotSet,
+    ):
+        """
+        A CompletableGithubObject can be partially initialised (completed=False).
+        Accessing attributes that are not initialized will then trigger a request
+        to complete all attributes.
+
+        A partially initialized CompletableGithubObject (completed=False) with lazy=False
+        will complete all attributes *while* constructing the instance. This requires the
+        url to be given via parameter `url` or `attributes`.
+
+        With `transitive_lazy=True`, CompletableGithubObjects created from this object
+        will be lazy themselves (where implemented).
+
+        :param requester: requester
+        :param headers: response headers
+        :param attributes: attributes to initialize
+        :param completed: do not update non-initialized attributes when True
+        :param url: url of this instance, overrides attributes['url']
+        :param accept: use this accept header when completing this instance
+        :param do_complete: completes attributes on initialization, requires url or attributes['url']
+        :param transitive_lazy: completable objects created from this objects shall be lazy
+        """
+        if headers is None:
+            headers = {}
+        if attributes is None:
+            attributes = {}
+        if url is not None:
+            attributes["url"] = url
+        super().__init__(requester, headers, attributes)
         self.__completed = completed
+        self.__completeHeaders = {"Accept": accept} if accept else None
+        self.__transitiveLazy = transitive_lazy
+        if do_complete:
+            self._completeIfNeeded()
 
     def __eq__(self, other: Any) -> bool:
         return other.__class__ is self.__class__ and other._url.value == self._url.value
@@ -355,6 +397,10 @@ class CompletableGithubObject(GithubObject):
 
     def __ne__(self, other: Any) -> bool:
         return not self == other
+
+    @property
+    def _transitiveLazy(self) -> Opt[bool]:
+        return self.__transitiveLazy
 
     def _completeIfNotSet(self, value: Attribute) -> None:
         if isinstance(value, _NotSetType):
@@ -367,7 +413,7 @@ class CompletableGithubObject(GithubObject):
     def __complete(self) -> None:
         if self._url.value is None:
             raise IncompletableObject(400, message="Returned object contains no URL")
-        headers, data = self._requester.requestJsonAndCheck("GET", self._url.value)
+        headers, data = self._requester.requestJsonAndCheck("GET", self._url.value, headers=self.__completeHeaders)
         self._storeAndUseAttributes(headers, data)
         self.__completed = True
 
