@@ -157,7 +157,7 @@ class _BadAttribute(Attribute):
 
     @property
     def value(self) -> Any:
-        raise BadAttributeException(self.__value, self.__expectedType, self.__exception) from self.__exception
+        raise BadAttributeException(self.__value, self.__expectedType, self.__exception)
 
 
 # v3: add * to edit function of all GithubObject implementations,
