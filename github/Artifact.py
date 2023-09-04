@@ -78,50 +78,62 @@ class Artifact(CompletableGithubObject):
 
     @property
     def archive_download_url(self) -> str:
+        self._completeIfNotSet(self._archive_download_url)
         return self._archive_download_url.value
 
     @property
     def created_at(self) -> datetime:
+        self._completeIfNotSet(self._created_at)
         return self._created_at.value
 
     @property
     def expired(self) -> bool:
+        self._completeIfNotSet(self._expired)
         return self._expired.value
 
     @property
     def expires_at(self) -> datetime:
+        self._completeIfNotSet(self._expires_at)
         return self._expires_at.value
 
     @property
     def head_sha(self) -> str:
+        self._completeIfNotSet(self._head_sha)
         return self._head_sha.value
 
     @property
     def id(self) -> int:
+        self._completeIfNotSet(self._id)
         return self._id.value
 
     @property
     def name(self) -> str:
+        self._completeIfNotSet(self._name)
         return self._name.value
 
     @property
     def node_id(self) -> str:
+        self._completeIfNotSet(self._node_id)
         return self._node_id.value
 
     @property
     def size_in_bytes(self) -> int:
+        self._completeIfNotSet(self._size_in_bytes)
         return self._size_in_bytes.value
 
     @property
     def updated_at(self) -> datetime:
+        self._completeIfNotSet(self._updated_at)
         return self._updated_at.value
 
     @property
     def url(self) -> str:
+        self._completeIfNotSet(self._url)
         return self._url.value
 
     @property
     def workflow_run(self) -> WorkflowRun:
+        self._completeIfNotSet(self._workflow_run)
         return self._workflow_run.value
 
     def delete(self) -> bool:
