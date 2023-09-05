@@ -45,7 +45,7 @@ from operator import itemgetter
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from dateutil import parser
-from typing_extensions import Protocol, TypeGuard
+from typing_extensions import Protocol, Self, TypeGuard
 
 from . import Consts
 from .GithubException import BadAttributeException, IncompletableObject
@@ -352,7 +352,6 @@ class CompletableGithubObject(GithubObject, abc.ABC):
         *,
         url: Optional[str] = None,
         accept: Optional[str] = None,
-        do_complete: bool = False,
         transitive_lazy: Opt[bool] = NotSet,
     ):
         """
@@ -373,7 +372,6 @@ class CompletableGithubObject(GithubObject, abc.ABC):
         :param completed: do not update non-initialized attributes when True
         :param url: url of this instance, overrides attributes['url']
         :param accept: use this accept header when completing this instance
-        :param do_complete: completes attributes on initialization, requires url or attributes['url']
         :param transitive_lazy: completable objects created from this objects shall be lazy
         """
         if headers is None:
@@ -386,8 +384,6 @@ class CompletableGithubObject(GithubObject, abc.ABC):
         self.__completed = completed
         self.__completeHeaders = {"Accept": accept} if accept else None
         self.__transitiveLazy = transitive_lazy
-        if do_complete:
-            self._completeIfNeeded()
 
     def __eq__(self, other: Any) -> bool:
         return other.__class__ is self.__class__ and other._url.value == self._url.value
@@ -416,6 +412,24 @@ class CompletableGithubObject(GithubObject, abc.ABC):
         headers, data = self._requester.requestJsonAndCheck("GET", self._url.value, headers=self.__completeHeaders)
         self._storeAndUseAttributes(headers, data)
         self.__completed = True
+
+    def do_complete_unless_lazy(self, lazy: Opt[bool], default: bool = True) -> Self:
+        if isinstance(lazy, bool):
+            if not lazy:
+                self._completeIfNeeded()
+            return self
+        elif isinstance(self.__transitiveLazy, bool):
+            if not lazy:
+                self._completeIfNeeded()
+            return self
+
+        if default:
+            self._completeIfNeeded()
+        return self
+
+    def do_complete(self) -> Self:
+        self._completeIfNeeded()
+        return self
 
     def update(self, additional_headers: Optional[Dict[str, Any]] = None) -> bool:
         """
