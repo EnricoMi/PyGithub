@@ -115,7 +115,7 @@ import github.NamedUser
 import github.Topic
 from github import Consts
 from github.GithubIntegration import GithubIntegration
-from github.GithubObject import GithubObject, NotSet, Opt, is_defined, is_optional, is_undefined
+from github.GithubObject import GithubObject, NotSet, Opt, is_defined, is_optional
 from github.GithubRetry import GithubRetry
 from github.HookDelivery import HookDelivery, HookDeliverySummary
 from github.HookDescription import HookDescription
@@ -365,12 +365,12 @@ class Github:
         """
         if login is NotSet:
             url = "/user"
-            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url, do_complete=False)
+            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url)
         else:
             assert isinstance(login, str), login
             login = urllib.parse.quote(login)
             url = f"/users/{login}"
-            return github.NamedUser.NamedUser(self.__requester, url=url, do_complete=True)
+            return github.NamedUser.NamedUser(self.__requester, url=url).do_complete()
 
     def get_user_by_id(self, user_id: int) -> NamedUser:
         """
@@ -433,18 +433,9 @@ class Github:
         assert isinstance(full_name_or_id, (str, int)), full_name_or_id
         url_base = "/repositories/" if isinstance(full_name_or_id, int) else "/repos/"
         url = f"{url_base}{full_name_or_id}"
-        do_complete = (
-            is_defined(lazy)
-            and not lazy
-            or is_undefined(lazy)
-            and is_defined(self.__lazy)
-            and not self.__lazy
-            or is_undefined(lazy)
-            and is_undefined(self.__lazy)
-        )
         return github.Repository.Repository(
-            self.__requester, url=url, do_complete=do_complete, transitive_lazy=self.__lazy
-        )
+            self.__requester, url=url, transitive_lazy=self.__lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_repos(
         self,
