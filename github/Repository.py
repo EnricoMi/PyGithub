@@ -197,7 +197,6 @@ import github.Team
 import github.View
 import github.Workflow
 import github.WorkflowRun
-from github.GithubObject import is_defined
 
 from . import Consts
 
@@ -1987,11 +1986,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert isinstance(branch, str), branch
         url = f"{self.url}/branches/{branch}"
         return github.Branch.Branch(
-            self._requester,
-            url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
-            transitive_lazy=self._transitiveLazy,
-        )
+            self._requester, url=url, transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def rename_branch(self, branch, new_name):
         """
@@ -2052,9 +2048,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.CommitComment.CommitComment(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_comments(self):
         """
@@ -2080,9 +2075,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Commit.Commit(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_commits(
         self,
@@ -2221,9 +2215,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._requester,
             url=url,
             accept=accept,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def create_deployment(
         self,
@@ -2425,7 +2418,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         )
 
         return {
-            "content": github.ContentFile.ContentFile(self._requester, headers, data["content"], do_complete=False),
+            "content": github.ContentFile.ContentFile(self._requester, headers, data["content"], completed=False),
             "commit": github.Commit.Commit(self._requester, headers, data["commit"], completed=True),
         }
 
@@ -2456,9 +2449,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.RepositoryAdvisory.RepositoryAdvisory(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def update_file(
         self,
@@ -2612,9 +2604,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Download.Download(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_downloads(self):
         """
@@ -2686,9 +2677,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.GitBlob.GitBlob(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_commit(self, sha, lazy=github.GithubObject.NotSet):
         """
@@ -2702,9 +2692,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.GitCommit.GitCommit(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_ref(self, ref, lazy=github.GithubObject.NotSet):
         """
@@ -2721,9 +2710,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.GitRef.GitRef(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_refs(self):
         """
@@ -2757,9 +2745,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.GitTag.GitTag(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_tree(self, sha, recursive=github.GithubObject.NotSet):
         """
@@ -2791,9 +2778,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Hook.Hook(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_hooks(self):
         """
@@ -2845,9 +2831,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Issue.Issue(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_issues(
         self,
@@ -2976,9 +2961,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._requester,
             url=url,
             accept=accept,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_issues_events(self):
         """
@@ -3005,9 +2989,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.RepositoryKey.RepositoryKey(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_keys(self):
         """
@@ -3033,9 +3016,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Label.Label(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_labels(self):
         """
@@ -3073,9 +3055,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Milestone.Milestone(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_milestones(
         self,
@@ -3139,9 +3120,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.PullRequest.PullRequest(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_pulls(
         self,
@@ -3402,21 +3382,15 @@ class Repository(github.GithubObject.CompletableGithubObject):
             return github.GitRelease.GitRelease(
                 self._requester,
                 url=url,
-                do_complete=not (
-                    is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy
-                ),
                 transitive_lazy=self._transitiveLazy,
-            )
+            ).do_complete_unless_lazy(lazy=lazy)
         elif isinstance(id, str):
             url = f"{self.url}/releases/tags/{id}"
             return github.GitRelease.GitRelease(
                 self._requester,
                 url=url,
-                do_complete=not (
-                    is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy
-                ),
                 transitive_lazy=self._transitiveLazy,
-            )
+            ).do_complete_unless_lazy(lazy=lazy)
 
     def get_latest_release(self):
         """
@@ -3479,9 +3453,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Workflow.Workflow(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_workflow_runs(
         self,
@@ -3558,9 +3531,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.WorkflowRun.WorkflowRun(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def has_in_assignees(self, assignee):
         """
@@ -3865,9 +3837,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._requester,
             url=url,
             accept=accept,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def update_check_suites_preferences(self, auto_trigger_checks):
         """
@@ -3915,9 +3886,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.GitReleaseAsset.GitReleaseAsset(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def create_check_run(
         self,
@@ -3997,9 +3967,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.CheckRun.CheckRun(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_artifacts(self, name=github.GithubObject.NotSet):
         """
@@ -4032,9 +4001,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.Artifact.Artifact(
             self._requester,
             url=url,
-            do_complete=not (is_defined(lazy) and lazy or is_defined(self._transitiveLazy) and self._transitiveLazy),
             transitive_lazy=self._transitiveLazy,
-        )
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_codescan_alerts(self):
         """
