@@ -554,19 +554,20 @@ class Organization(CompletableGithubObject):
             list_item="secrets",
         )
 
-    def get_secret(self, secret_name: str) -> OrganizationSecret:
+    def get_secret(self, secret_name: str, lazy: Opt[bool] = NotSet) -> OrganizationSecret:
         """
         :calls: 'GET /orgs/{org}/actions/secrets/{secret_name} <https://docs.github.com/en/rest/actions/secrets#get-an-organization-secret>`_
         :param secret_name: string
+        :param lazy: bool
         :rtype: github.OrganizationSecret.OrganizationSecret
         """
         assert isinstance(secret_name, str), secret_name
+        assert is_optional(lazy, bool), lazy
         return github.OrganizationSecret.OrganizationSecret(
             requester=self._requester,
-            headers={},
-            attributes={"url": f"{self.url}/actions/secrets/{secret_name}"},
-            completed=False,
-        )
+            url=f"{self.url}/actions/secrets/{secret_name}",
+            sticky_lazy=self.sticky_lazy,
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def create_team(
         self,
@@ -659,19 +660,20 @@ class Organization(CompletableGithubObject):
             list_item="variables",
         )
 
-    def get_variable(self, variable_name: str) -> OrganizationVariable:
+    def get_variable(self, variable_name: str, lazy: Opt[bool] = NotSet) -> OrganizationVariable:
         """
         :calls: 'GET /orgs/{org}/actions/variables/{variable_name} <https://docs.github.com/en/rest/actions/variables#get-an-organization-variable>`_
         :param variable_name: string
+        :param lazy: bool
         :rtype: github.OrganizationVariable.OrganizationVariable
         """
         assert isinstance(variable_name, str), variable_name
+        assert is_optional(lazy, bool), lazy
         return github.OrganizationVariable.OrganizationVariable(
             requester=self._requester,
-            headers={},
-            attributes={"url": f"{self.url}/actions/variables/{variable_name}"},
-            completed=False,
-        )
+            url=f"{self.url}/actions/variables/{variable_name}",
+            sticky_lazy=self.sticky_lazy,
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def delete_hook(self, id: int) -> None:
         """
@@ -747,13 +749,15 @@ class Organization(CompletableGithubObject):
         """
         return PaginatedList(github.Event.Event, self._requester, f"{self.url}/events", None)
 
-    def get_hook(self, id: int) -> github.Hook.Hook:
+    def get_hook(self, id: int, lazy: Opt[bool] = NotSet) -> github.Hook.Hook:
         """
         :calls: `GET /orgs/{owner}/hooks/{id} <https://docs.github.com/en/rest/reference/orgs#webhooks>`_
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/hooks/{id}")
-        return github.Hook.Hook(self._requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.Hook.Hook(
+            self._requester, url=f"{self.url}/hooks/{id}", sticky_lazy=self.sticky_lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_hooks(self) -> PaginatedList[Hook]:
         """
@@ -766,6 +770,7 @@ class Organization(CompletableGithubObject):
         :calls: `GET /orgs/{owner}/hooks/{hook_id}/deliveries/{delivery_id} <https://docs.github.com/en/rest/reference/orgs#get-a-webhook-delivery-for-an-organization-webhook>`_
         :param hook_id: integer
         :param delivery_id: integer
+        :param lazy: bool
         :rtype: :class:`github.HookDelivery.HookDelivery`
         """
         assert isinstance(hook_id, int), hook_id
@@ -915,19 +920,21 @@ class Organization(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/secrets/public-key")
         return github.PublicKey.PublicKey(self._requester, headers, data, completed=True)
 
-    def get_repo(self, name: str) -> Repository:
+    def get_repo(self, name: str, lazy: Opt[bool] = NotSet) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <https://docs.github.com/en/rest/reference/repos>`_
         :param name: string
+        :param lazy: bool
         :rtype: :class:`github.Repository.Repository`
         """
         assert isinstance(name, str), name
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"/repos/{self.login}/{name}",
-            headers={"Accept": Consts.repoVisibilityPreview},
-        )
-        return github.Repository.Repository(self._requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.Repository.Repository(
+            self._requester,
+            url=f"/repos/{self.login}/{name}",
+            accept=Consts.repoVisibilityPreview,
+            sticky_lazy=self.sticky_lazy,
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_repos(
         self,
@@ -955,21 +962,25 @@ class Organization(CompletableGithubObject):
             headers={"Accept": Consts.repoVisibilityPreview},
         )
 
-    def get_team(self, id: int) -> Team:
+    def get_team(self, id: int, lazy: Opt[bool] = NotSet) -> Team:
         """
         :calls: `GET /teams/{id} <https://docs.github.com/en/rest/reference/teams>`_
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/teams/{id}")
-        return github.Team.Team(self._requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.Team.Team(
+            self._requester, url=f"/teams/{id}", sticky_lazy=self.sticky_lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
-    def get_team_by_slug(self, slug: str) -> Team:
+    def get_team_by_slug(self, slug: str, lazy: Opt[bool] = NotSet) -> Team:
         """
         :calls: `GET /orgs/{org}/teams/{team_slug} <https://docs.github.com/en/rest/reference/teams#get-a-team-by-name>`_
         """
         assert isinstance(slug, str), slug
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/teams/{slug}")
-        return github.Team.Team(self._requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.Team.Team(
+            self._requester, url=f"{self.url}/teams/{slug}", sticky_lazy=self.sticky_lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_teams(self) -> PaginatedList[Team]:
         """
