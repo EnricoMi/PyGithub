@@ -117,7 +117,7 @@ import github.NamedUser
 import github.Topic
 from github import Consts
 from github.GithubIntegration import GithubIntegration
-from github.GithubObject import GithubObject, NotSet, Opt, is_defined, is_optional
+from github.GithubObject import CompletableGithubObject, GithubObject, NotSet, Opt, is_defined, is_optional
 from github.GithubRetry import GithubRetry
 from github.HookDelivery import HookDelivery, HookDeliverySummary
 from github.HookDescription import HookDescription
@@ -945,7 +945,9 @@ class Github:
         if headers is None:
             headers = {}
 
-        return klass(self.__requester, headers, raw_data, completed=True)
+        if issubclass(klass, CompletableGithubObject):
+            return klass(self.__requester, headers, raw_data, completed=True)
+        return klass(self.__requester, headers, raw_data)
 
     def dump(self, obj: GithubObject, file: BinaryIO, protocol: int = 0) -> None:
         """
