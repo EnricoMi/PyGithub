@@ -99,3 +99,35 @@ class Lazy(Framework.TestCase):
         self.doTestLazyObject(
             lambda g, lazy: g.get_repo("PyGithub/PyGithub", lazy=True).get_issue(1234, lazy=lazy), tests
         )
+
+    def testLazyOrg(self):
+        # fetches comment only (on accessing user attribute)
+        self.assertEqual(
+            "stale[bot]",
+            github.Github(retry=None, lazy=True)
+            .get_organization("PyGithub")
+            .get_repo("PyGithub")
+            .get_issue(1234)
+            .get_comment(560146023)
+            .user.login,
+        )
+        self.assertEqual(
+            "stale[bot]",
+            github.Github(retry=None)
+            .get_organization("PyGithub", lazy=True)
+            .get_repo("PyGithub", lazy=True)
+            .get_issue(1234, lazy=True)
+            .get_comment(560146023, lazy=True)
+            .user.login,
+        )
+
+        # test laziness of these org getters
+        tests = [
+            lambda org, lazy: org.get_repo("PyGithub", lazy=lazy),
+            lambda org, lazy: org.get_hook(1234, lazy=lazy),
+            lambda org, lazy: org.get_team(1234, lazy=lazy),
+            lambda org, lazy: org.get_team_by_slug("slug", lazy=lazy),
+            lambda org, lazy: org.get_secret("secret", lazy=lazy),
+            lambda org, lazy: org.get_variable("var", lazy=lazy),
+        ]
+        self.doTestLazyObject(lambda g, lazy: g.get_organization("PyGithub", lazy=lazy), tests)
