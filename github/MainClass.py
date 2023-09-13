@@ -315,13 +315,14 @@ class Github:
         """
         assert login is NotSet or isinstance(login, str), login
         if login is NotSet:
-            url = "/user"
-            klass = github.AuthenticatedUser.AuthenticatedUser
+            return github.AuthenticatedUser.AuthenticatedUser(
+                self.__requester, url="/user", transitive_lazy=self.__lazy
+            ).do_complete_unless_lazy(lazy=lazy)
         else:
-            url = f"/users/{login}"
-            klass = github.NamedUser.NamedUser
+            return github.NamedUser.NamedUser(
+                self.__requester, attributes={"login": login}, url=f"/users/{login}", transitive_lazy=self.__lazy
+            ).do_complete_unless_lazy(lazy=lazy)
 
-        return klass(self.__requester, url=url, transitive_lazy=self.__lazy).do_complete_unless_lazy(lazy=lazy)
 
     def get_user_by_id(self, user_id: int, lazy: Opt[bool] = NotSet) -> NamedUser:
         """

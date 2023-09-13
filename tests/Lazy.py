@@ -88,3 +88,31 @@ class Lazy(Framework.TestCase):
             lambda repo, lazy: repo.get_pull(1234, lazy=lazy),
         ]
         self.doTestLazyObject(lambda g, lazy: g.get_repo("PyGithub/PyGithub", lazy=lazy), tests)
+
+    def testLazyUser(self):
+        # fetches comment only
+        self.assertEqual(
+            "stale[bot]",
+            github.Github(retry=None, lazy=True)
+            .get_user("PyGithub")
+            .get_repo("PyGithub")
+            .get_issue(1234)
+            .get_comment(560146023)
+            .user.login,
+        )
+        self.assertEqual(
+            "stale[bot]",
+            github.Github(retry=None)
+            .get_user("PyGithub", lazy=True)
+            .get_repo("PyGithub", lazy=True)
+            .get_issue(1234, lazy=True)
+            .get_comment(560146023, lazy=True)
+            .user.login,
+        )
+
+        # test laziness of these repo getters
+        tests = [
+            lambda user, lazy: user.get_repo("repo", lazy=lazy),
+            lambda user, lazy: user.get_organization_membership("org", lazy=lazy),
+        ]
+        self.doTestLazyObject(lambda g, lazy: g.get_user("PyGithub", lazy=lazy), tests)
