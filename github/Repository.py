@@ -2001,9 +2001,8 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Branch.Branch`
         """
         assert isinstance(branch, str), branch
-        url = f"{self.url}/branches/{branch}"
         return github.Branch.Branch(
-            self._requester, url=url, transitive_lazy=self._transitiveLazy
+            self._requester, url=f"{self.url}/branches/{branch}", transitive_lazy=self._transitiveLazy
         ).do_complete_unless_lazy(lazy=lazy)
 
     def rename_branch(self, branch: str | Branch, new_name: str) -> bool:
@@ -2061,10 +2060,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CommitComment.CommitComment`
         """
         assert isinstance(id, int), id
-        url = f"{self.url}/comments/{id}"
         return github.CommitComment.CommitComment(
             self._requester,
-            url=url,
+            url=f"{self.url}/comments/{id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2088,10 +2086,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Commit.Commit`
         """
         assert isinstance(sha, str), sha
-        url = f"{self.url}/commits/{sha}"
         return github.Commit.Commit(
             self._requester,
-            url=url,
+            url=f"{self.url}/commits/{sha}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2224,12 +2221,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Deployment.Deployment`
         """
         assert isinstance(id_, int), id_
-        url = f"{self.url}/deployments/{id_}"
-        accept = Consts.deploymentEnhancementsPreview
         return github.Deployment.Deployment(
             self._requester,
-            url=url,
-            accept=accept,
+            url=f"{self.url}/deployments/{id_}",
+            accept=Consts.deploymentEnhancementsPreview,
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2450,10 +2445,9 @@ class Repository(CompletableGithubObject):
         :param lazy: bool
         :rtype: :class:`github.RepositoryAdvisory.RepositoryAdvisory`
         """
-        url = f"{self.url}/security-advisories/{ghsa}"
         return github.RepositoryAdvisory.RepositoryAdvisory(
             self._requester,
-            url=url,
+            url=f"{self.url}/security-advisories/{ghsa}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2602,10 +2596,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Download.Download`
         """
         assert isinstance(id, int), id
-        url = f"{self.url}/downloads/{id}"
         return github.Download.Download(
             self._requester,
-            url=url,
+            url=f"{self.url}/downloads/{id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2671,10 +2664,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.GitBlob.GitBlob`
         """
         assert isinstance(sha, str), sha
-        url = f"{self.url}/git/blobs/{sha}"
         return github.GitBlob.GitBlob(
             self._requester,
-            url=url,
+            url=f"{self.url}/git/blobs/{sha}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2686,10 +2678,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.GitCommit.GitCommit`
         """
         assert isinstance(sha, str), sha
-        url = f"{self.url}/git/commits/{sha}"
         return github.GitCommit.GitCommit(
             self._requester,
-            url=url,
+            url=f"{self.url}/git/commits/{sha}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2704,10 +2695,9 @@ class Repository(CompletableGithubObject):
         if not self._requester.FIX_REPO_GET_GIT_REF:
             prefix = "/git/"
         assert isinstance(ref, str), ref
-        url = f"{self.url}{prefix}{ref}"
         return github.GitRef.GitRef(
             self._requester,
-            url=url,
+            url=f"{self.url}{prefix}{ref}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2739,10 +2729,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.GitTag.GitTag`
         """
         assert isinstance(sha, str), sha
-        url = f"{self.url}/git/tags/{sha}"
         return github.GitTag.GitTag(
             self._requester,
-            url=url,
+            url=f"{self.url}/git/tags/{sha}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2772,10 +2761,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Hook.Hook`
         """
         assert isinstance(id, int), id
-        url = f"{self.url}/hooks/{id}"
         return github.Hook.Hook(
             self._requester,
-            url=url,
+            url=f"{self.url}/hooks/{id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2823,10 +2811,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Issue.Issue`
         """
         assert isinstance(number, int), number
-        url = f"{self.url}/issues/{number}"
         return github.Issue.Issue(
             self._requester,
-            url=url,
+            url=f"{self.url}/issues/{number}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2943,12 +2930,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.IssueEvent.IssueEvent`
         """
         assert isinstance(id, int), id
-        url = f"{self.url}/issues/events/{id}"
-        accept = Consts.mediaTypeLockReasonPreview
         return github.IssueEvent.IssueEvent(
             self._requester,
-            url=url,
-            accept=accept,
+            url=f"{self.url}/issues/events/{id}",
+            accept=Consts.mediaTypeLockReasonPreview,
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -2973,10 +2958,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.RepositoryKey.RepositoryKey`
         """
         assert isinstance(id, int), id
-        url = f"{self.url}/keys/{id}"
         return github.RepositoryKey.RepositoryKey(
             self._requester,
-            url=url,
+            url=f"{self.url}/keys/{id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3000,10 +2984,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Label.Label`
         """
         assert isinstance(name, str), name
-        url = f"{self.url}/labels/{urllib.parse.quote(name)}"
         return github.Label.Label(
             self._requester,
-            url=url,
+            url=f"{self.url}/labels/{urllib.parse.quote(name)}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3039,10 +3022,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Milestone.Milestone`
         """
         assert isinstance(number, int), number
-        url = f"{self.url}/milestones/{number}"
         return github.Milestone.Milestone(
             self._requester,
-            url=url,
+            url=f"{self.url}/milestones/{number}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3104,10 +3086,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.PullRequest.PullRequest`
         """
         assert isinstance(number, int), number
-        url = f"{self.url}/pulls/{number}"
         return github.PullRequest.PullRequest(
             self._requester,
-            url=url,
+            url=f"{self.url}/pulls/{number}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3358,20 +3339,16 @@ class Repository(CompletableGithubObject):
         :param lazy: bool
         :rtype: None or :class:`github.GitRelease.GitRelease`
         """
+        assert isinstance(id, (int, str)), id
         if isinstance(id, int):
             url = f"{self.url}/releases/{id}"
-            return github.GitRelease.GitRelease(
-                self._requester,
-                url=url,
-                transitive_lazy=self._transitiveLazy,
-            ).do_complete_unless_lazy(lazy=lazy)
-        elif isinstance(id, str):
+        else:
             url = f"{self.url}/releases/tags/{id}"
-            return github.GitRelease.GitRelease(
-                self._requester,
-                url=url,
-                transitive_lazy=self._transitiveLazy,
-            ).do_complete_unless_lazy(lazy=lazy)
+        return github.GitRelease.GitRelease(
+            self._requester,
+            url=url,
+            transitive_lazy=self._transitiveLazy,
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_latest_release(self) -> GitRelease:
         """
@@ -3428,10 +3405,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Workflow.Workflow`
         """
         assert isinstance(id_or_file_name, (int, str)), id_or_file_name
-        url = f"{self.url}/actions/workflows/{id_or_file_name}"
         return github.Workflow.Workflow(
             self._requester,
-            url=url,
+            url=f"{self.url}/actions/workflows/{id_or_file_name}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3498,10 +3474,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.WorkflowRun.WorkflowRun`
         """
         assert isinstance(id_, int)
-        url = f"{self.url}/actions/runs/{id_}"
         return github.WorkflowRun.WorkflowRun(
             self._requester,
-            url=url,
+            url=f"{self.url}/actions/runs/{id_}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3798,12 +3773,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CheckSuite.CheckSuite`
         """
         assert isinstance(check_suite_id, int), check_suite_id
-        url = f"{self.url}/check-suites/{check_suite_id}"
-        accept = "application/vnd.github.v3+json"
         return github.CheckSuite.CheckSuite(
             self._requester,
-            url=url,
-            accept=accept,
+            url=f"{self.url}/check-suites/{check_suite_id}",
+            accept="application/vnd.github.v3+json",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3844,11 +3817,9 @@ class Repository(CompletableGithubObject):
 
     def get_release_asset(self, id: int, lazy: Opt[bool] = NotSet) -> GitReleaseAsset:
         assert isinstance(id, (int)), id
-
-        url = f"{self.url}/releases/assets/{id}"
         return github.GitReleaseAsset.GitReleaseAsset(
             self._requester,
-            url=url,
+            url=f"{self.url}/releases/assets/{id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3923,10 +3894,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CheckRun.CheckRun`
         """
         assert isinstance(check_run_id, int), check_run_id
-        url = f"{self.url}/check-runs/{check_run_id}"
         return github.CheckRun.CheckRun(
             self._requester,
-            url=url,
+            url=f"{self.url}/check-runs/{check_run_id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
@@ -3957,10 +3927,9 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Artifact.Artifact`
         """
         assert isinstance(artifact_id, int), artifact_id
-        url = f"{self.url}/actions/artifacts/{artifact_id}"
         return github.Artifact.Artifact(
             self._requester,
-            url=url,
+            url=f"{self.url}/actions/artifacts/{artifact_id}",
             transitive_lazy=self._transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
