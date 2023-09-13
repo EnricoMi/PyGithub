@@ -408,27 +408,29 @@ class Github:
             url_parameters,
         )
 
-    def get_project(self, id: int) -> Project:
+    def get_project(self, id: int, lazy: Opt[bool] = NotSet) -> Project:
         """
         :calls: `GET /projects/{project_id} <https://docs.github.com/en/rest/reference/projects#get-a-project>`_
         """
-        headers, data = self.__requester.requestJsonAndCheck(
-            "GET",
-            f"/projects/{id:d}",
-            headers={"Accept": Consts.mediaTypeProjectsPreview},
-        )
-        return github.Project.Project(self.__requester, headers, data, completed=True)
+        assert isinstance(id, int), id
+        return github.Project.Project(
+            self.__requester,
+            url=f"/projects/{id:d}",
+            accept=Consts.mediaTypeProjectsPreview,
+            transitive_lazy=self.__lazy,
+        ).do_complete_unless_lazy(lazy=lazy)
 
-    def get_project_column(self, id: int) -> ProjectColumn:
+    def get_project_column(self, id: int, lazy: Opt[bool] = NotSet) -> ProjectColumn:
         """
         :calls: `GET /projects/columns/{column_id} <https://docs.github.com/en/rest/reference/projects#get-a-project-column>`_
         """
-        headers, data = self.__requester.requestJsonAndCheck(
-            "GET",
-            "/projects/columns/%d" % id,
-            headers={"Accept": Consts.mediaTypeProjectsPreview},
-        )
-        return github.ProjectColumn.ProjectColumn(self.__requester, headers, data, completed=True)
+        assert isinstance(id, int), id
+        return github.ProjectColumn.ProjectColumn(
+            self.__requester,
+            url=f"/projects/columns/{id:d}",
+            accept=Consts.mediaTypeProjectsPreview,
+            transitive_lazy=self.__lazy,
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_gist(self, id: str) -> Gist:
         """
