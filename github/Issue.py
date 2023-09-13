@@ -364,13 +364,14 @@ class Issue(CompletableGithubObject):
         """
         headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/lock")
 
-    def get_comment(self, id: int) -> IssueComment:
+    def get_comment(self, id: int, lazy: Opt[bool] = NotSet) -> IssueComment:
         """
         :calls: `GET /repos/{owner}/{repo}/issues/comments/{id} <https://docs.github.com/en/rest/reference/issues#comments>`_
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self._parentUrl(self.url)}/comments/{id}")
-        return github.IssueComment.IssueComment(self._requester, headers, data, completed=True)
+        return github.IssueComment.IssueComment(
+            self._requester, url=f"{self._parentUrl(self.url)}/comments/{id}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_comments(self, since: Opt[datetime] = NotSet) -> PaginatedList[IssueComment]:
         """
