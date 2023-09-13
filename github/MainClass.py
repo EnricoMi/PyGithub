@@ -434,9 +434,8 @@ class Github:
         """
         assert isinstance(full_name_or_id, (str, int)), full_name_or_id
         url_base = "/repositories/" if isinstance(full_name_or_id, int) else "/repos/"
-        url = f"{url_base}{full_name_or_id}"
         return github.Repository.Repository(
-            self.__requester, url=url, transitive_lazy=self.__lazy
+            self.__requester, url=f"{url_base}{full_name_or_id}", transitive_lazy=self.__lazy
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_repos(
