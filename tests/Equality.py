@@ -43,7 +43,7 @@ class Equality(Framework.TestCase):
         # Erf, equality of NonCompletableGithubObjects will be difficult to implement
         # because even their _rawData can differ. (Here, the avatar_url is not equal)
         # (CompletableGithubObjects are compared by their API url, which is a good key)
-        r = self.g.get_user().get_repo("PyGithub")
+        r = self.g.get_user(lazy=True).get_repo("PyGithub")
         b1 = r.get_branch("develop")
         b2 = r.get_branch("develop")
         self.assertNotEqual(b1._rawData, b2._rawData)

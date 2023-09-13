@@ -33,7 +33,7 @@ from . import Framework
 class UserKey(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.key = self.g.get_user().get_key(2626650)
+        self.key = self.g.get_user(lazy=True).get_key(2626650)
 
     def testAttributes(self):
         self.assertEqual(self.key.id, 2626650)

@@ -33,7 +33,7 @@ from . import Framework
 class Issue54(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.repo = self.g.get_user().get_repo("TestRepo")
+        self.repo = self.g.get_user(lazy=True).get_repo("TestRepo")
 
     def testConversion(self):
         commit = self.repo.get_git_commit("73f320ae06cd565cf38faca34b6a482addfc721b")

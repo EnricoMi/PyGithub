@@ -33,7 +33,9 @@ from . import Framework
 class GitTree(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.tree = self.g.get_user().get_repo("PyGithub").get_git_tree("f492784d8ca837779650d1fb406a1a3587a764ad")
+        self.tree = (
+            self.g.get_user(lazy=True).get_repo("PyGithub").get_git_tree("f492784d8ca837779650d1fb406a1a3587a764ad")
+        )
 
     def testAttributes(self):
         self.assertEqual(self.tree.sha, "f492784d8ca837779650d1fb406a1a3587a764ad")

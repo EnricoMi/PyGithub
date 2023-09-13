@@ -57,7 +57,7 @@ from . import Framework
 class Migration(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.user = self.g.get_user()
+        self.user = self.g.get_user(lazy=True)
         self.migration = self.user.get_migrations()[0]
 
     def testAttributes(self):

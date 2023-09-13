@@ -32,7 +32,7 @@ from . import Framework
 class Traffic(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.user = self.g.get_user()
+        self.user = self.g.get_user(lazy=True)
         self.repo = self.user.get_repo("PyGithub")
 
     def testGetReferrers(self):

@@ -28,7 +28,7 @@ from . import Framework
 class Project(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.repo = self.g.get_user().get_repo("PyGithub")
+        self.repo = self.g.get_user(lazy=True).get_repo("PyGithub")
 
     def testGetProject(self):
         pid = 1682941

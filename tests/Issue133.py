@@ -29,7 +29,7 @@ from . import Framework
 class Issue133(Framework.TestCase):  # https://github.com/jacquev6/PyGithub/pull/133
     def setUp(self):
         super().setUp()
-        self.user = self.g.get_user()
+        self.user = self.g.get_user(lazy=True)
 
     def testGetPageWithoutInitialArguments(self):
         self.assertEqual(len(self.user.get_followers().get_page(0)), 22)

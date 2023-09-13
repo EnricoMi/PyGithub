@@ -34,7 +34,7 @@ from . import Framework
 class Download(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.download = self.g.get_user().get_repo("PyGithub").get_download(242550)
+        self.download = self.g.get_user(lazy=True).get_repo("PyGithub").get_download(242550)
 
     def testAttributes(self):
         self.assertEqual(self.download.accesskeyid, None)

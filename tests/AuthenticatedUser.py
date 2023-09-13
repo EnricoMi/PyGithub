@@ -40,7 +40,7 @@ from . import Framework
 class AuthenticatedUser(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.user = self.g.get_user()
+        self.user = self.g.get_user(lazy=True)
 
     def testAttributes(self):
         self.assertEqual(
@@ -693,7 +693,7 @@ class AuthenticatedUser(Framework.TestCase):
             notification.updated_at,
             datetime(2013, 3, 15, 5, 43, 11, tzinfo=timezone.utc),
         )
-        self.assertEqual(notification.url, None)
+        self.assertEqual(notification.url, "/notifications/threads/8406712")
         self.assertEqual(notification.subject.url, None)
         self.assertEqual(notification.subject.latest_comment_url, None)
         self.assertEqual(

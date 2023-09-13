@@ -32,7 +32,7 @@ from . import Framework
 class Tag(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.tag = self.g.get_user().get_repo("PyGithub").get_tags()[0]
+        self.tag = self.g.get_user(lazy=True).get_repo("PyGithub").get_tags()[0]
 
     def testAttributes(self):
         self.assertEqual(self.tag.commit.sha, "636e6112deb72277b3bffcc3303cd7e8a7431a5d")

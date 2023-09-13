@@ -34,7 +34,7 @@ from . import Framework
 class Milestone(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.milestone = self.g.get_user().get_repo("PyGithub").get_milestone(1)
+        self.milestone = self.g.get_user(lazy=True).get_repo("PyGithub").get_milestone(1)
 
     def testAttributes(self):
         self.assertEqual(self.milestone.closed_issues, 2)

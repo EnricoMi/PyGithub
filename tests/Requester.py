@@ -399,7 +399,7 @@ class RequesterThrottled(RequesterThrottleTestCase):
     def testShouldDeferWrites(self):
         with self.mock_sleep() as sleep_mock:
             # same test setup as in AuthenticatedUser.testEmail
-            user = self.g.get_user()
+            user = self.g.get_user(lazy=True)
             emails = user.get_emails()
             self.assertEqual(
                 [item.email for item in emails],

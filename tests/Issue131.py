@@ -29,7 +29,7 @@ from . import Framework
 class Issue131(Framework.TestCase):  # https://github.com/jacquev6/PyGithub/pull/133
     def setUp(self):
         super().setUp()
-        self.user = self.g.get_user()
+        self.user = self.g.get_user(lazy=True)
         self.repo = self.g.get_user("openmicroscopy").get_repo("ome-documentation")
 
     def testGetPullWithOrgHeadUser(self):

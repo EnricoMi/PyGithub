@@ -29,7 +29,7 @@ from . import Framework
 
 class ExposeAllAttributes(Framework.TestCase):
     def testAllClasses(self):
-        authenticatedUser = self.g.get_user()
+        authenticatedUser = self.g.get_user(lazy=True)
         namedUser = self.g.get_user("nvie")
         repository = authenticatedUser.get_repo("PyGithub")
         organization = self.g.get_organization("BeaverSoftware")

@@ -35,7 +35,7 @@ class Enterprise(Framework.BasicTestCase):
     def testHttps(self):
         g = github.Github(auth=self.login, base_url="https://my.enterprise.com")
         self.assertListKeyEqual(
-            g.get_user().get_repos(),
+            g.get_user(lazy=True).get_repos(),
             lambda r: r.name,
             [
                 "TestPyGithub",
@@ -60,7 +60,7 @@ class Enterprise(Framework.BasicTestCase):
     def testHttp(self):
         g = github.Github(auth=self.login, base_url="http://my.enterprise.com")
         self.assertListKeyEqual(
-            g.get_user().get_repos(),
+            g.get_user(lazy=True).get_repos(),
             lambda r: r.name,
             [
                 "TestPyGithub",
@@ -89,7 +89,7 @@ class Enterprise(Framework.BasicTestCase):
 
     def testLongUrl(self):
         g = github.Github(auth=self.login, base_url="http://my.enterprise.com/path/to/github")
-        repos = g.get_user().get_repos()
+        repos = g.get_user(lazy=True).get_repos()
         self.assertListKeyEqual(
             repos,
             lambda r: r.name,
@@ -117,7 +117,7 @@ class Enterprise(Framework.BasicTestCase):
     def testSpecificPort(self):
         g = github.Github(auth=self.login, base_url="http://my.enterprise.com:8080")
         self.assertListKeyEqual(
-            g.get_user().get_repos(),
+            g.get_user(lazy=True).get_repos(),
             lambda r: r.name,
             [
                 "TestPyGithub",
