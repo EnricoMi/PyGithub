@@ -27,7 +27,10 @@ class RequiredPullRequestReviews(Framework.TestCase):
     def setUp(self):
         super().setUp()
         self.required_pull_request_reviews = (
-            self.g.get_user().get_repo("PyGithub").get_branch("integrations").get_required_pull_request_reviews()
+            self.g.get_user(lazy=True)
+            .get_repo("PyGithub")
+            .get_branch("integrations")
+            .get_required_pull_request_reviews()
         )
 
     def testAttributes(self):

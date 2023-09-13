@@ -31,7 +31,7 @@ from . import Framework
 class Issue87(Framework.TestCase):  # https://github.com/jacquev6/PyGithub/issues/87
     def setUp(self):
         super().setUp()
-        self.repo = self.g.get_user().get_repo("PyGithub")
+        self.repo = self.g.get_user(lazy=True).get_repo("PyGithub")
 
     def testCreateIssueWithPercentInTitle(self):
         issue = self.repo.create_issue("Issue with percent % in title created by PyGithub")

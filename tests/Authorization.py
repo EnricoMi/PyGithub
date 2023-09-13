@@ -33,7 +33,7 @@ from . import Framework
 class Authorization(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.authorization = self.g.get_user().get_authorization(372259)
+        self.authorization = self.g.get_user(lazy=True).get_authorization(372259)
 
     def testAttributes(self):
         self.assertEqual(

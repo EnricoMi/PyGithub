@@ -30,7 +30,7 @@ from . import Framework
 class ReleaseAsset(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.release = self.g.get_user().get_repo("PyGithub").get_releases()[0]
+        self.release = self.g.get_user(lazy=True).get_repo("PyGithub").get_releases()[0]
         self.asset = self.release.get_assets()[0]
 
     def testAttributes(self):

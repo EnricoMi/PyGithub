@@ -43,7 +43,7 @@ from . import Framework
 
 class GitMembership(Framework.TestCase):
     def testGetMembership(self):
-        octocat = self.g.get_user()
+        octocat = self.g.get_user(lazy=True)
         self.assertEqual(octocat.login, "octocat")
         membership_data = octocat.get_organization_membership("github")
         self.assertEqual(membership_data.user.login, "octocat")

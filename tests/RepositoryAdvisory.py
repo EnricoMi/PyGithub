@@ -32,7 +32,7 @@ class RepositoryAdvisory(Framework.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.repo = self.g.get_user().get_repo("security-research")
+        self.repo = self.g.get_user(lazy=True).get_repo("security-research")
         self.advisory = self.repo.get_repository_advisory("GHSA-wmmh-r9w4-hpxx")
         self.advisory.clear_credits()
         self.advisory.offer_credit("octocat", "analyst")
@@ -134,7 +134,7 @@ class RepositoryAdvisory(Framework.TestCase):
         )
 
     def testRepositoryWithNoAdvisories(self):
-        repo = self.g.get_user().get_repo("PyGithub")
+        repo = self.g.get_user(lazy=True).get_repo("PyGithub")
         self.assertListKeyEqual(
             repo.get_repository_advisories(),
             lambda e: e.ghsa_id,

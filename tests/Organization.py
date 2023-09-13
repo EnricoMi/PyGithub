@@ -224,7 +224,7 @@ class Organization(Framework.TestCase):
         self.assertListKeyEqual(self.org.get_issues(), lambda i: i.id, [])
 
     def testGetIssuesWithAllArguments(self):
-        requestedByUser = self.g.get_user().get_repo("PyGithub").get_label("Requested by user")
+        requestedByUser = self.g.get_user(lazy=True).get_repo("PyGithub").get_label("Requested by user")
         issues = self.org.get_issues(
             "assigned",
             "closed",

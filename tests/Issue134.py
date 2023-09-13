@@ -33,13 +33,13 @@ class Issue134(Framework.BasicTestCase):  # https://github.com/jacquev6/PyGithub
     def testGetAuthorizationsFailsWhenAutenticatedThroughOAuth(self):
         g = github.Github(auth=self.oauth_token)
         with self.assertRaises(github.GithubException) as raisedexp:
-            list(g.get_user().get_authorizations())
+            list(g.get_user(lazy=True).get_authorizations())
         self.assertEqual(raisedexp.exception.status, 404)
 
     def testGetAuthorizationsSucceedsWhenAutenticatedThroughLoginPassword(self):
         g = github.Github(auth=self.login)
         self.assertListKeyEqual(
-            g.get_user().get_authorizations(),
+            g.get_user(lazy=True).get_authorizations(),
             lambda a: a.note,
             [None, None, "cligh", None, None, "GitHub Android App"],
         )

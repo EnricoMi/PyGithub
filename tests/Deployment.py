@@ -29,7 +29,7 @@ from . import Framework
 class Deployment(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.deployment = self.g.get_user().get_repo("PyGithub").get_deployment(263877258)
+        self.deployment = self.g.get_user(lazy=True).get_repo("PyGithub").get_deployment(263877258)
 
     def testAttributes(self):
         self.assertEqual(self.deployment.id, 263877258)

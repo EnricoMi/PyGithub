@@ -60,7 +60,7 @@ from . import Framework
 class Repository(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.user = self.g.get_user()
+        self.user = self.g.get_user(lazy=True)
         self.repo = self.user.get_repo("PyGithub")
 
     def testAttributes(self):
@@ -185,7 +185,7 @@ class Repository(Framework.TestCase):
         self.assertEqual(self.repo.master_branch, "master")
 
     def testDelete(self):
-        repo = self.g.get_user().get_repo("TestPyGithub")
+        repo = self.g.get_user(lazy=True).get_repo("TestPyGithub")
         repo.delete()
 
     def testGetContributors(self):
@@ -1352,7 +1352,7 @@ class Repository(Framework.TestCase):
         self.assertEqual(issues[0].state, "open")
 
     def testMarkNotificationsAsRead(self):
-        repo = self.g.get_user().get_repo("PyGithub")
+        repo = self.g.get_user(lazy=True).get_repo("PyGithub")
         repo.mark_notifications_as_read(datetime(2018, 10, 18, 18, 19, 43, 0))
 
     def testAssignees(self):

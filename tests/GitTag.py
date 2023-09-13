@@ -35,7 +35,9 @@ from . import Framework
 class GitTag(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.tag = self.g.get_user().get_repo("PyGithub").get_git_tag("f5f37322407b02a80de4526ad88d5f188977bc3c")
+        self.tag = (
+            self.g.get_user(lazy=True).get_repo("PyGithub").get_git_tag("f5f37322407b02a80de4526ad88d5f188977bc3c")
+        )
 
     def testAttributes(self):
         self.assertEqual(self.tag.message, "Version 0.6\n")

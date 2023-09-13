@@ -309,27 +309,31 @@ class Github:
 
         return PaginatedList(github.Event.Event, self.__requester, "/events", None)
 
-    def get_user(self, login: Opt[str] = NotSet) -> NamedUser | AuthenticatedUser:
+    def get_user(self, login: Opt[str] = NotSet, lazy: Opt[bool] = NotSet) -> NamedUser | AuthenticatedUser:
         """
         :calls: `GET /users/{user} <https://docs.github.com/en/rest/reference/users>`_ or `GET /user <https://docs.github.com/en/rest/reference/users>`_
         """
         assert login is NotSet or isinstance(login, str), login
         if login is NotSet:
             url = "/user"
-            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url)
+            klass = github.AuthenticatedUser.AuthenticatedUser
         else:
             url = f"/users/{login}"
-            return github.NamedUser.NamedUser(self.__requester, url=url).do_complete()
+            klass = github.NamedUser.NamedUser
 
-    def get_user_by_id(self, user_id: int) -> NamedUser:
+        return klass(self.__requester, url=url, transitive_lazy=self.__lazy).do_complete_unless_lazy(lazy=lazy)
+
+    def get_user_by_id(self, user_id: int, lazy: Opt[bool] = NotSet) -> NamedUser:
         """
         :calls: `GET /user/{id} <https://docs.github.com/en/rest/reference/users>`_
         :param user_id: int
+        :param lazy: bool
         :rtype: :class:`github.NamedUser.NamedUser`
         """
         assert isinstance(user_id, int), user_id
-        headers, data = self.__requester.requestJsonAndCheck("GET", f"/user/{user_id}")
-        return github.NamedUser.NamedUser(self.__requester, headers, data, completed=True)
+        return github.NamedUser.NamedUser(
+            self.__requester, url=f"/user/{user_id}", transitive_lazy=self.__lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_users(self, since: Opt[int] = NotSet) -> PaginatedList[NamedUser]:
         """
@@ -368,6 +372,7 @@ class Github:
         """
         :calls: `GET /enterprises/{enterprise} <https://docs.github.com/en/enterprise-cloud@latest/rest/enterprise-admin>`_
         :param enterprise: string
+        :param lazy: bool
         :rtype: :class:`Enterprise`
         """
         assert isinstance(enterprise, str), enterprise

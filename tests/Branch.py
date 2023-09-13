@@ -36,7 +36,7 @@ from . import Framework
 class Branch(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.repo = self.g.get_user().get_repo("PyGithub")
+        self.repo = self.g.get_user(lazy=True).get_repo("PyGithub")
         self.branch = self.repo.get_branch("topic/RewriteWithGeneratedCode")
         self.protected_branch = self.repo.get_branch("integrations")
         self.organization_branch = self.g.get_repo("PyGithub/PyGithub", lazy=True).get_branch("master")

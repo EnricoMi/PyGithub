@@ -33,7 +33,9 @@ from . import Framework
 class Commit(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.commit = self.g.get_user().get_repo("PyGithub").get_commit("1292bf0e22c796e91cc3d6e24b544aece8c21f2a")
+        self.commit = (
+            self.g.get_user(lazy=True).get_repo("PyGithub").get_commit("1292bf0e22c796e91cc3d6e24b544aece8c21f2a")
+        )
         self.commit.author.login  # to force lazy completion
 
     def testAttributes(self):
@@ -130,5 +132,5 @@ class Commit(Framework.TestCase):
         self.assertEqual(status.description, "Status successfuly created by PyGithub")
 
     def testGetPulls(self):
-        commit = self.g.get_user().get_repo("PyGithub").get_commit("e44d11d565c022496544dd6ed1f19a8d718c2b0c")
+        commit = self.g.get_user(lazy=True).get_repo("PyGithub").get_commit("e44d11d565c022496544dd6ed1f19a8d718c2b0c")
         self.assertListKeyEqual(commit.get_pulls(), lambda c: c.number, [1431])

@@ -33,7 +33,7 @@ from . import Framework
 class Label(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.label = self.g.get_user().get_repo("PyGithub").get_label("Bug")
+        self.label = self.g.get_user(lazy=True).get_repo("PyGithub").get_label("Bug")
 
     def testAttributes(self):
         self.assertEqual(self.label.color, "e10c02")

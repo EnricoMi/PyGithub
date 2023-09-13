@@ -39,7 +39,7 @@ from . import Framework
 class Exceptions(Framework.TestCase):
     def testInvalidInput(self):
         with self.assertRaises(github.GithubException) as raisedexp:
-            self.g.get_user().create_key("Bad key", "xxx")
+            self.g.get_user(lazy=True).create_key("Bad key", "xxx")
         self.assertEqual(raisedexp.exception.status, 422)
         self.assertEqual(
             raisedexp.exception.data,
@@ -71,7 +71,7 @@ class Exceptions(Framework.TestCase):
 
     def testUnknownObject(self):
         with self.assertRaises(github.GithubException) as raisedexp:
-            self.g.get_user().get_repo("Xxx")
+            self.g.get_user(lazy=True).get_repo("Xxx")
         self.assertEqual(raisedexp.exception.status, 404)
         self.assertEqual(raisedexp.exception.data, {"message": "Not Found"})
         self.assertEqual(str(raisedexp.exception), '404 {"message": "Not Found"}')
@@ -113,7 +113,7 @@ class SpecificExceptions(Framework.TestCase):
         )
 
     def testUnknownObject(self):
-        self.assertRaises(github.UnknownObjectException, lambda: self.g.get_user().get_repo("Xxx"))
+        self.assertRaises(github.UnknownObjectException, lambda: self.g.get_user(lazy=True).get_repo("Xxx"))
 
     def testBadUserAgent(self):
         self.assertRaises(

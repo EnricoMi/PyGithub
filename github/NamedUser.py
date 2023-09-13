@@ -434,13 +434,14 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
             github.Event.Event, self._requester, f"{self.url}/received_events", None
         )
 
-    def get_repo(self, name: str) -> Repository:
+    def get_repo(self, name: str, lazy: Opt[bool] = NotSet) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <https://docs.github.com/en/rest/reference/repos>`_
         """
         assert isinstance(name, str), name
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/repos/{self.login}/{name}")
-        return github.Repository.Repository(self._requester, headers, data, completed=True)
+        return github.Repository.Repository(
+            self._requester, url=f"/repos/{self.login}/{name}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_repos(
         self,
@@ -507,15 +508,16 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
     def _identity(self) -> str:
         return self.login
 
-    def get_organization_membership(self, org: str | Organization) -> Membership:
+    def get_organization_membership(self, org: str | Organization, lazy: Opt[bool] = NotSet) -> Membership:
         """
         :calls: `GET /orgs/{org}/memberships/{username} <https://docs.github.com/en/rest/reference/orgs#check-organization-membership-for-a-user>`_
         """
         assert isinstance(org, str) or isinstance(org, github.Organization.Organization), org
         if isinstance(org, github.Organization.Organization):
             org = org.login  # type: ignore
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/orgs/{org}/memberships/{self.login}")
-        return github.Membership.Membership(self._requester, headers, data, completed=True)
+        return github.Membership.Membership(
+            self._requester, url=f"/orgs/{org}/memberships/{self.login}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
         if "avatar_url" in attributes:  # pragma no branch

@@ -37,7 +37,10 @@ class CommitStatus(Framework.TestCase):
     def setUp(self):
         super().setUp()
         self.statuses = list(
-            self.g.get_user().get_repo("PyGithub").get_commit("1292bf0e22c796e91cc3d6e24b544aece8c21f2a").get_statuses()
+            self.g.get_user(lazy=True)
+            .get_repo("PyGithub")
+            .get_commit("1292bf0e22c796e91cc3d6e24b544aece8c21f2a")
+            .get_statuses()
         )
 
     def testAttributes(self):

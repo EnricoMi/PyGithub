@@ -36,7 +36,7 @@ from . import Framework
 class PullRequestComment(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.comment = self.g.get_user().get_repo("PyGithub").get_pull(31).get_comment(886298)
+        self.comment = self.g.get_user(lazy=True).get_repo("PyGithub").get_pull(31).get_comment(886298)
 
     def testAttributes(self):
         self.assertEqual(self.comment.body, "Comment created by PyGithub")

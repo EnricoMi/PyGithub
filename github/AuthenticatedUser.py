@@ -617,13 +617,14 @@ class AuthenticatedUser(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("PATCH", "/user", input=post_parameters)
         self._useAttributes(data)
 
-    def get_authorization(self, id: int) -> Authorization:
+    def get_authorization(self, id: int, lazy: Opt[bool] = NotSet) -> Authorization:
         """
         :calls: `GET /authorizations/{id} <https://docs.github.com/en/developers/apps/authorizing-oauth-apps>`_
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/authorizations/{id}")
-        return github.Authorization.Authorization(self._requester, headers, data, completed=True)
+        return github.Authorization.Authorization(
+            self._requester, url=f"/authorizations/{id}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_authorizations(self) -> PaginatedList[Authorization]:
         """
@@ -734,13 +735,14 @@ class AuthenticatedUser(CompletableGithubObject):
             url_parameters["since"] = since.strftime("%Y-%m-%dT%H:%M:%SZ")
         return PaginatedList(github.Issue.Issue, self._requester, "/user/issues", url_parameters)
 
-    def get_key(self, id: int) -> UserKey:
+    def get_key(self, id: int, lazy: Opt[bool] = NotSet) -> UserKey:
         """
         :calls: `GET /user/keys/{id} <http://docs.github.com/en/rest/reference/users#git-ssh-keys>`_
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/user/keys/{id}")
-        return github.UserKey.UserKey(self._requester, headers, data, completed=True)
+        return github.UserKey.UserKey(
+            self._requester, url=f"/user/keys/{id}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_keys(self) -> PaginatedList[UserKey]:
         """
@@ -748,14 +750,15 @@ class AuthenticatedUser(CompletableGithubObject):
         """
         return PaginatedList(github.UserKey.UserKey, self._requester, "/user/keys", None)
 
-    def get_notification(self, id: str) -> Notification:
+    def get_notification(self, id: str, lazy: Opt[bool] = NotSet) -> Notification:
         """
         :calls: `GET /notifications/threads/{id} <http://docs.github.com/en/rest/reference/activity#notifications>`_
         """
 
         assert isinstance(id, str), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/notifications/threads/{id}")
-        return github.Notification.Notification(self._requester, headers, data, completed=True)
+        return github.Notification.Notification(
+            self._requester, url=f"/notifications/threads/{id}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_notifications(
         self,
@@ -805,13 +808,14 @@ class AuthenticatedUser(CompletableGithubObject):
         """
         return PaginatedList(github.Organization.Organization, self._requester, "/user/orgs", None)
 
-    def get_repo(self, name: str) -> Repository:
+    def get_repo(self, name: str, lazy: Opt[bool] = NotSet) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <http://docs.github.com/en/rest/reference/repos>`_
         """
         assert isinstance(name, str), name
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/repos/{self.login}/{name}")
-        return github.Repository.Repository(self._requester, headers, data, completed=True)
+        return github.Repository.Repository(
+            self._requester, url=f"/repos/{self.login}/{name}", transitive_lazy=self._total_private_repos
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_repos(
         self,
@@ -1027,13 +1031,14 @@ class AuthenticatedUser(CompletableGithubObject):
             headers={"Accept": Consts.mediaTypeMigrationPreview},
         )
 
-    def get_organization_membership(self, org: str) -> Membership:
+    def get_organization_membership(self, org: str, lazy: Opt[bool] = NotSet) -> Membership:
         """
         :calls: `GET /user/memberships/orgs/{org} <https://docs.github.com/en/rest/reference/orgs#get-an-organization-membership-for-the-authenticated-user>`_
         """
         assert isinstance(org, str)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"/user/memberships/orgs/{org}")
-        return github.Membership.Membership(self._requester, headers, data, completed=True)
+        return github.Membership.Membership(
+            self._requester, url=f"/user/memberships/orgs/{org}", transitive_lazy=self._transitiveLazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
         if "avatar_url" in attributes:  # pragma no branch

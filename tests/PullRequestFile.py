@@ -32,7 +32,7 @@ from . import Framework
 class PullRequestFile(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.file = self.g.get_user().get_repo("PyGithub").get_pull(31).get_files()[0]
+        self.file = self.g.get_user(lazy=True).get_repo("PyGithub").get_pull(31).get_files()[0]
 
     def testAttributes(self):
         self.assertEqual(self.file.additions, 1)

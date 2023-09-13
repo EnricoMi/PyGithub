@@ -32,7 +32,7 @@ class Markdown(Framework.TestCase):
     def setUp(self):
         super().setUp()
         self.text = "MyTitle\n=======\n\nIssue #1"
-        self.repo = self.g.get_user().get_repo("PyGithub")
+        self.repo = self.g.get_user(lazy=True).get_repo("PyGithub")
 
     def testRenderMarkdown(self):
         self.assertEqual(
