@@ -90,3 +90,26 @@ class Lazy(Framework.TestCase):
             lambda repo, lazy: repo.get_pull(1234, lazy=lazy),
         ]
         self.doTestLazyObject(lambda g, lazy: g.get_repo("PyGithub/PyGithub", lazy=lazy), tests)
+
+    def testLazyGist(self):
+        # fetches comment only (on accessing user attribute)
+        self.assertEqual(
+            "EnricoMi",
+            github.Github(retry=None, lazy=True)
+            .get_gist("612cb538c14731f1a8fefe504f519395")
+            .get_comment(4690872)
+            .user.login,
+        )
+        self.assertEqual(
+            "EnricoMi",
+            github.Github(retry=None)
+            .get_gist("612cb538c14731f1a8fefe504f519395", lazy=True)
+            .get_comment(4690872, lazy=True)
+            .user.login,
+        )
+
+        # test laziness of these gist getters
+        tests = [
+            lambda gist, lazy: gist.get_comment(1234, lazy=lazy),
+        ]
+        self.doTestLazyObject(lambda g, lazy: g.get_gist("123abc", lazy=lazy), tests)
