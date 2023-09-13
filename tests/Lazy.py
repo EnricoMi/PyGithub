@@ -63,7 +63,7 @@ class Lazy(Framework.TestCase):
             github.Github(retry=None)
             .get_repo("PyGithub/PyGithub", lazy=True)
             .get_issue(1234, lazy=True)
-            .get_comment(560146023)
+            .get_comment(560146023, lazy=True)
             .user.login,
         )
 
