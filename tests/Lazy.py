@@ -11,13 +11,13 @@ class Lazy(Framework.TestCase):
         self.assertIsInstance(obj, CompletableGithubObject)
 
         is_lazy = lazy is True or is_undefined(lazy) and transitive_lazy is True
-        self.assertEqual(not is_lazy, obj._CompletableGithubObject__completed)
+        self.assertEqual(not is_lazy, obj.completed)
 
         if is_defined(transitive_lazy):
-            self.assertTrue(is_defined(obj._CompletableGithubObject__transitiveLazy))
-            self.assertEqual(transitive_lazy, obj._CompletableGithubObject__transitiveLazy)
+            self.assertTrue(is_defined(obj.transitiveLazy))
+            self.assertEqual(transitive_lazy, obj.transitiveLazy)
         else:
-            self.assertTrue(is_undefined(obj._CompletableGithubObject__transitiveLazy))
+            self.assertTrue(is_undefined(obj.transitiveLazy))
 
         for func in tests:
             with self.subTest(lazy_child=True):
