@@ -408,7 +408,7 @@ class CompletableGithubObject(GithubObject, ABC):
         *,
         url: Optional[str] = None,
         accept: Optional[str] = None,
-        transitive_lazy: Opt[bool] = NotSet,
+        sticky_lazy: Opt[bool] = NotSet,
     ):
         """
         A CompletableGithubObject can be partially initialised (completed=False).
@@ -428,7 +428,7 @@ class CompletableGithubObject(GithubObject, ABC):
         :param completed: do not update non-initialized attributes when True
         :param url: url of this instance, overrides attributes['url']
         :param accept: use this accept header when completing this instance
-        :param transitive_lazy: completable objects created from this objects shall be lazy
+        :param sticky_lazy: completable objects created from this objects shall be lazy
         """
         if headers is None:
             headers = {}
@@ -439,7 +439,7 @@ class CompletableGithubObject(GithubObject, ABC):
         super().__init__(requester, headers, attributes)
         self.__completed = completed
         self.__completeHeaders = {"Accept": accept} if accept else None
-        self.__transitiveLazy = transitive_lazy
+        self.__sticky_lazy = sticky_lazy
 
     def __eq__(self, other: Any) -> bool:
         return other.__class__ is self.__class__ and other._url.value == self._url.value
@@ -455,8 +455,8 @@ class CompletableGithubObject(GithubObject, ABC):
         return self.__completed
 
     @property
-    def transitiveLazy(self) -> Opt[bool]:
-        return self.__transitiveLazy
+    def sticky_lazy(self) -> Opt[bool]:
+        return self.__sticky_lazy
 
     def _completeIfNotSet(self, value: Attribute) -> None:
         if isinstance(value, _NotSetType):
@@ -478,7 +478,7 @@ class CompletableGithubObject(GithubObject, ABC):
             if not lazy:
                 self._completeIfNeeded()
             return self
-        elif isinstance(self.__transitiveLazy, bool):
+        elif isinstance(self.sticky_lazy, bool):
             if not lazy:
                 self._completeIfNeeded()
             return self
