@@ -449,7 +449,11 @@ class CompletableGithubObject(GithubObject, ABC):
         return not self == other
 
     @property
-    def _transitiveLazy(self) -> Opt[bool]:
+    def completed(self) -> bool:
+        return self.__completed
+
+    @property
+    def transitiveLazy(self) -> Opt[bool]:
         return self.__transitiveLazy
 
     def _completeIfNotSet(self, value: Attribute) -> None:
