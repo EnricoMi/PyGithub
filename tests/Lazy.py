@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Callable
 
 import github
@@ -42,9 +44,9 @@ class Lazy(Framework.TestCase):
                 # do not test any cases that actually access the API
                 if lazy is True or is_undefined(lazy) and sticky_lazy is True:
                     with self.subTest(sticky_lazy=sticky_lazy, lazy=lazy):
-                        g = github.Github(retry=None, lazy=sticky_lazy)
-                        obj = func(g, lazy)
-                        self.assertLaziness(obj, tests, sticky_lazy, lazy)
+                        g = github.Github(retry=None, lazy=sticky_lazy)  # type: ignore
+                        obj = func(g, lazy)  # type: ignore
+                        self.assertLaziness(obj, tests, sticky_lazy, lazy)  # type: ignore
 
     def testLazyRepo(self):
         # fetches comment only
