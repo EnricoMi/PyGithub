@@ -2003,7 +2003,7 @@ class Repository(CompletableGithubObject):
         assert isinstance(branch, str), branch
         assert is_optional(lazy, bool), lazy
         return github.Branch.Branch(
-            self._requester, url=f"{self.url}/branches/{branch}", transitive_lazy=self._transitiveLazy
+            self._requester, url=f"{self.url}/branches/{branch}", transitive_lazy=self.transitiveLazy
         ).do_complete_unless_lazy(lazy=lazy)
 
     def rename_branch(self, branch: str | Branch, new_name: str) -> bool:
@@ -2065,7 +2065,7 @@ class Repository(CompletableGithubObject):
         return github.CommitComment.CommitComment(
             self._requester,
             url=f"{self.url}/comments/{id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_comments(self) -> PaginatedList[CommitComment]:
@@ -2092,7 +2092,7 @@ class Repository(CompletableGithubObject):
         return github.Commit.Commit(
             self._requester,
             url=f"{self.url}/commits/{sha}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_commits(
@@ -2229,7 +2229,7 @@ class Repository(CompletableGithubObject):
             self._requester,
             url=f"{self.url}/deployments/{id_}",
             accept=Consts.deploymentEnhancementsPreview,
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def create_deployment(
@@ -2454,7 +2454,7 @@ class Repository(CompletableGithubObject):
         return github.RepositoryAdvisory.RepositoryAdvisory(
             self._requester,
             url=f"{self.url}/security-advisories/{ghsa}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def update_file(
@@ -2606,7 +2606,7 @@ class Repository(CompletableGithubObject):
         return github.Download.Download(
             self._requester,
             url=f"{self.url}/downloads/{id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_downloads(self) -> PaginatedList[Download]:
@@ -2675,7 +2675,7 @@ class Repository(CompletableGithubObject):
         return github.GitBlob.GitBlob(
             self._requester,
             url=f"{self.url}/git/blobs/{sha}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_commit(self, sha: str, lazy: Opt[bool] = NotSet) -> GitCommit:
@@ -2690,7 +2690,7 @@ class Repository(CompletableGithubObject):
         return github.GitCommit.GitCommit(
             self._requester,
             url=f"{self.url}/git/commits/{sha}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_ref(self, ref: str, lazy: Opt[bool] = NotSet) -> GitRef:
@@ -2708,7 +2708,7 @@ class Repository(CompletableGithubObject):
         return github.GitRef.GitRef(
             self._requester,
             url=f"{self.url}{prefix}{ref}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_refs(self) -> PaginatedList[GitRef]:
@@ -2743,7 +2743,7 @@ class Repository(CompletableGithubObject):
         return github.GitTag.GitTag(
             self._requester,
             url=f"{self.url}/git/tags/{sha}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_git_tree(self, sha: str, recursive: Opt[bool] = NotSet) -> GitTree:
@@ -2776,7 +2776,7 @@ class Repository(CompletableGithubObject):
         return github.Hook.Hook(
             self._requester,
             url=f"{self.url}/hooks/{id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_hooks(self) -> PaginatedList[Hook]:
@@ -2827,7 +2827,7 @@ class Repository(CompletableGithubObject):
         return github.Issue.Issue(
             self._requester,
             url=f"{self.url}/issues/{number}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_issues(
@@ -2948,7 +2948,7 @@ class Repository(CompletableGithubObject):
             self._requester,
             url=f"{self.url}/issues/events/{id}",
             accept=Consts.mediaTypeLockReasonPreview,
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_issues_events(self) -> PaginatedList[IssueEvent]:
@@ -2976,7 +2976,7 @@ class Repository(CompletableGithubObject):
         return github.RepositoryKey.RepositoryKey(
             self._requester,
             url=f"{self.url}/keys/{id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_keys(self) -> PaginatedList[RepositoryKey]:
@@ -3003,7 +3003,7 @@ class Repository(CompletableGithubObject):
         return github.Label.Label(
             self._requester,
             url=f"{self.url}/labels/{urllib.parse.quote(name)}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_labels(self) -> PaginatedList[Label]:
@@ -3042,7 +3042,7 @@ class Repository(CompletableGithubObject):
         return github.Milestone.Milestone(
             self._requester,
             url=f"{self.url}/milestones/{number}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_milestones(
@@ -3107,7 +3107,7 @@ class Repository(CompletableGithubObject):
         return github.PullRequest.PullRequest(
             self._requester,
             url=f"{self.url}/pulls/{number}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_pulls(
@@ -3366,7 +3366,7 @@ class Repository(CompletableGithubObject):
         return github.GitRelease.GitRelease(
             self._requester,
             url=url,
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_latest_release(self) -> GitRelease:
@@ -3428,7 +3428,7 @@ class Repository(CompletableGithubObject):
         return github.Workflow.Workflow(
             self._requester,
             url=f"{self.url}/actions/workflows/{id_or_file_name}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_workflow_runs(
@@ -3498,7 +3498,7 @@ class Repository(CompletableGithubObject):
         return github.WorkflowRun.WorkflowRun(
             self._requester,
             url=f"{self.url}/actions/runs/{id_}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def has_in_assignees(self, assignee: str | NamedUser) -> bool:
@@ -3799,7 +3799,7 @@ class Repository(CompletableGithubObject):
             self._requester,
             url=f"{self.url}/check-suites/{check_suite_id}",
             accept="application/vnd.github.v3+json",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def update_check_suites_preferences(
@@ -3843,7 +3843,7 @@ class Repository(CompletableGithubObject):
         return github.GitReleaseAsset.GitReleaseAsset(
             self._requester,
             url=f"{self.url}/releases/assets/{id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def create_check_run(
@@ -3921,7 +3921,7 @@ class Repository(CompletableGithubObject):
         return github.CheckRun.CheckRun(
             self._requester,
             url=f"{self.url}/check-runs/{check_run_id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_artifacts(self, name: Opt[str] = NotSet) -> PaginatedList[Artifact]:
@@ -3955,7 +3955,7 @@ class Repository(CompletableGithubObject):
         return github.Artifact.Artifact(
             self._requester,
             url=f"{self.url}/actions/artifacts/{artifact_id}",
-            transitive_lazy=self._transitiveLazy,
+            transitive_lazy=self.transitiveLazy,
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_codescan_alerts(self) -> PaginatedList[CodeScanAlert]:
