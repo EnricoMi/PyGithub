@@ -1985,6 +1985,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Branch.Branch`
         """
         assert isinstance(branch, str), branch
+        assert is_optional(lazy, bool), lazy
         branch = urllib.parse.quote(branch)
         return github.Branch.Branch(
             self._requester, url=f"{self.url}/branches/{branch}", transitive_lazy=self._transitiveLazy
@@ -2056,6 +2057,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CommitComment.CommitComment`
         """
         assert isinstance(id, int), id
+        assert is_optional(lazy, bool), lazy
         return github.CommitComment.CommitComment(
             self._requester,
             url=f"{self.url}/comments/{id}",
@@ -2082,6 +2084,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Commit.Commit`
         """
         assert isinstance(sha, str), sha
+        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.Commit.Commit(
             self._requester,
@@ -2211,6 +2214,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Deployment.Deployment`
         """
         assert isinstance(id_, int), id_
+        assert is_optional(lazy, bool), lazy
         return github.Deployment.Deployment(
             self._requester,
             url=f"{self.url}/deployments/{id_}",
@@ -2434,6 +2438,8 @@ class Repository(CompletableGithubObject):
         :param lazy: bool
         :rtype: :class:`github.RepositoryAdvisory.RepositoryAdvisory`
         """
+        assert isinstance(ghsa, str), ghsa
+        assert is_optional(lazy, bool), lazy
         ghsa = urllib.parse.quote(ghsa)
         return github.RepositoryAdvisory.RepositoryAdvisory(
             self._requester,
@@ -2589,6 +2595,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Download.Download`
         """
         assert isinstance(id, int), id
+        assert is_optional(lazy, bool), lazy
         return github.Download.Download(
             self._requester,
             url=f"{self.url}/downloads/{id}",
@@ -2657,6 +2664,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.GitBlob.GitBlob`
         """
         assert isinstance(sha, str), sha
+        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.GitBlob.GitBlob(
             self._requester,
@@ -2672,6 +2680,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.GitCommit.GitCommit`
         """
         assert isinstance(sha, str), sha
+        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.GitCommit.GitCommit(
             self._requester,
@@ -2690,6 +2699,7 @@ class Repository(CompletableGithubObject):
         if not self._requester.FIX_REPO_GET_GIT_REF:
             prefix = "/git/"
         assert isinstance(ref, str), ref
+        assert is_optional(lazy, bool), lazy
         ref = urllib.parse.quote(ref)
         return github.GitRef.GitRef(
             self._requester,
@@ -2726,6 +2736,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.GitTag.GitTag`
         """
         assert isinstance(sha, str), sha
+        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.GitTag.GitTag(
             self._requester,
@@ -2760,6 +2771,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Hook.Hook`
         """
         assert isinstance(id, int), id
+        assert is_optional(lazy, bool), lazy
         return github.Hook.Hook(
             self._requester,
             url=f"{self.url}/hooks/{id}",
@@ -2810,6 +2822,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Issue.Issue`
         """
         assert isinstance(number, int), number
+        assert is_optional(lazy, bool), lazy
         return github.Issue.Issue(
             self._requester,
             url=f"{self.url}/issues/{number}",
@@ -2920,6 +2933,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.IssueEvent.IssueEvent`
         """
         assert isinstance(id, int), id
+        assert is_optional(lazy, bool), lazy
         return github.IssueEvent.IssueEvent(
             self._requester,
             url=f"{self.url}/issues/events/{id}",
@@ -2948,6 +2962,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.RepositoryKey.RepositoryKey`
         """
         assert isinstance(id, int), id
+        assert is_optional(lazy, bool), lazy
         return github.RepositoryKey.RepositoryKey(
             self._requester,
             url=f"{self.url}/keys/{id}",
@@ -2974,6 +2989,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Label.Label`
         """
         assert isinstance(name, str), name
+        assert is_optional(lazy, bool), lazy
         return github.Label.Label(
             self._requester,
             url=f"{self.url}/labels/{urllib.parse.quote(name)}",
@@ -3012,6 +3028,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Milestone.Milestone`
         """
         assert isinstance(number, int), number
+        assert is_optional(lazy, bool), lazy
         return github.Milestone.Milestone(
             self._requester,
             url=f"{self.url}/milestones/{number}",
@@ -3076,6 +3093,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.PullRequest.PullRequest`
         """
         assert isinstance(number, int), number
+        assert is_optional(lazy, bool), lazy
         return github.PullRequest.PullRequest(
             self._requester,
             url=f"{self.url}/pulls/{number}",
@@ -3330,6 +3348,7 @@ class Repository(CompletableGithubObject):
         :rtype: None or :class:`github.GitRelease.GitRelease`
         """
         assert isinstance(id, (int, str)), id
+        assert is_optional(lazy, bool), lazy
         if isinstance(id, int):
             url = f"{self.url}/releases/{id}"
         else:
@@ -3396,6 +3415,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Workflow.Workflow`
         """
         assert isinstance(id_or_file_name, (int, str)), id_or_file_name
+        assert is_optional(lazy, bool), lazy
         id_or_file_name = urllib.parse.quote(str(id_or_file_name))
         return github.Workflow.Workflow(
             self._requester,
@@ -3466,6 +3486,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.WorkflowRun.WorkflowRun`
         """
         assert isinstance(id_, int)
+        assert is_optional(lazy, bool), lazy
         return github.WorkflowRun.WorkflowRun(
             self._requester,
             url=f"{self.url}/actions/runs/{id_}",
@@ -3771,6 +3792,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CheckSuite.CheckSuite`
         """
         assert isinstance(check_suite_id, int), check_suite_id
+        assert is_optional(lazy, bool), lazy
         return github.CheckSuite.CheckSuite(
             self._requester,
             url=f"{self.url}/check-suites/{check_suite_id}",
@@ -3816,6 +3838,7 @@ class Repository(CompletableGithubObject):
 
     def get_release_asset(self, id: int, lazy: Opt[bool] = NotSet) -> GitReleaseAsset:
         assert isinstance(id, (int)), id
+        assert is_optional(lazy, bool), lazy
         return github.GitReleaseAsset.GitReleaseAsset(
             self._requester,
             url=f"{self.url}/releases/assets/{id}",
@@ -3893,6 +3916,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CheckRun.CheckRun`
         """
         assert isinstance(check_run_id, int), check_run_id
+        assert is_optional(lazy, bool), lazy
         return github.CheckRun.CheckRun(
             self._requester,
             url=f"{self.url}/check-runs/{check_run_id}",
@@ -3926,6 +3950,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Artifact.Artifact`
         """
         assert isinstance(artifact_id, int), artifact_id
+        assert is_optional(lazy, bool), lazy
         return github.Artifact.Artifact(
             self._requester,
             url=f"{self.url}/actions/artifacts/{artifact_id}",
