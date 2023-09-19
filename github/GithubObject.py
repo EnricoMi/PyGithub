@@ -37,7 +37,6 @@
 # along with PyGithub. If not, see <http://www.gnu.org/licenses/>.             #
 #                                                                              #
 ################################################################################
-import abc
 import typing
 from abc import ABC
 from datetime import datetime, timezone
@@ -121,7 +120,7 @@ class _BadAttribute(Attribute):
 
 # v3: add * to edit function of all GithubObject implementations,
 #     this allows to rename attributes and maintain the order of attributes
-class GithubObject(abc.ABC):
+class GithubObject(ABC):
     """
     Base class for all classes representing objects returned by the API.
     """
@@ -283,11 +282,7 @@ class GithubObject(abc.ABC):
             isinstance(key, str) and isinstance(element, dict) for key, element in value.items()
         ):
             return _ValuedAttribute(
-                {
-                    key: klass(self._requester, self._headers, element)
-                    for key, element in value.items()
-                    if isinstance(element, dict)
-                }
+                {key: klass(self._requester, self._headers, element) for key, element in value.items()}
             )
         else:
             return _BadAttribute(value, {str: dict})
@@ -342,7 +337,7 @@ class NonCompletableGithubObject(GithubObject, ABC):
         super().__init__(requester, headers, attributes)
 
 
-class CompletableGithubObject(GithubObject, abc.ABC):
+class CompletableGithubObject(GithubObject, ABC):
     def __init__(
         self,
         requester: "Requester",
@@ -359,11 +354,11 @@ class CompletableGithubObject(GithubObject, abc.ABC):
         Accessing attributes that are not initialized will then trigger a request
         to complete all attributes.
 
-        A partially initialized CompletableGithubObject (completed=False) with lazy=False
-        will complete all attributes *while* constructing the instance. This requires the
-        url to be given via parameter `url` or `attributes`.
+        A partially initialized CompletableGithubObject (completed=False) can be completed
+        via do_complete(), or via do_complete_unless_lazy(lazy=lazy) if lazy and sticky_lazy
+        are not True. This requires the url to be given via parameter `url` or `attributes`.
 
-        With `transitive_lazy=True`, CompletableGithubObjects created from this object
+        With `sticky_lazy=True`, CompletableGithubObjects created from this object
         will be lazy themselves (where implemented).
 
         :param requester: requester
@@ -417,7 +412,7 @@ class CompletableGithubObject(GithubObject, abc.ABC):
         self._storeAndUseAttributes(headers, data)
         self.__completed = True
 
-    def do_complete_unless_lazy(self, lazy: Opt[bool], default: bool = True) -> Self:
+    def do_complete_unless_lazy(self, lazy: Opt[bool]) -> Self:
         if isinstance(lazy, bool):
             if not lazy:
                 self._completeIfNeeded()
@@ -427,8 +422,7 @@ class CompletableGithubObject(GithubObject, abc.ABC):
                 self._completeIfNeeded()
             return self
 
-        if default:
-            self._completeIfNeeded()
+        self._completeIfNeeded()
         return self
 
     def do_complete(self) -> Self:

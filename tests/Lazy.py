@@ -22,14 +22,14 @@ class Lazy(Framework.TestCase):
             self.assertTrue(is_undefined(obj.sticky_lazy))
 
         for func in tests:
-            with self.subTest(sticky_lazy=True):
+            with self.subTest(child_lazy=True):
                 instance = func(obj, True)
                 with self.subTest(object_type=instance.__class__.__name__):
                     self.assertLaziness(instance, [], sticky_lazy, True)
 
             # do not test any cases that actually access the API
             if sticky_lazy is True:
-                with self.subTest(sticky_lazy=NotSet):
+                with self.subTest(child_lazy=NotSet):
                     instance = func(obj, NotSet)
                     with self.subTest(object_type=instance.__class__.__name__):
                         self.assertLaziness(instance, [], sticky_lazy, NotSet)
