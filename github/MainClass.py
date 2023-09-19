@@ -341,13 +341,15 @@ class Github:
             url_parameters["since"] = since
         return PaginatedList(github.NamedUser.NamedUser, self.__requester, "/users", url_parameters)
 
-    def get_organization(self, login: str) -> Organization:
+    def get_organization(self, login: str, lazy: Opt[bool] = NotSet) -> Organization:
         """
         :calls: `GET /orgs/{org} <https://docs.github.com/en/rest/reference/orgs>`_
         """
         assert isinstance(login, str), login
-        headers, data = self.__requester.requestJsonAndCheck("GET", f"/orgs/{login}")
-        return github.Organization.Organization(self.__requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.Organization.Organization(
+            self.__requester, attributes={"login": login}, url=f"/orgs/{login}", sticky_lazy=self.__lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_organizations(self, since: Opt[int] = NotSet) -> PaginatedList[Organization]:
         """
