@@ -49,7 +49,7 @@ class Lazy(Framework.TestCase):
                         self.assertLaziness(obj, tests, sticky_lazy, lazy)  # type: ignore
 
     def testLazyRepo(self):
-        # fetches comment only
+        # fetches comment only (on accessing user attribute)
         self.assertEqual(
             "stale[bot]",
             github.Github(retry=None, lazy=True)
@@ -90,3 +90,12 @@ class Lazy(Framework.TestCase):
             lambda repo, lazy: repo.get_pull(1234, lazy=lazy),
         ]
         self.doTestLazyObject(lambda g, lazy: g.get_repo("PyGithub/PyGithub", lazy=lazy), tests)
+
+    def testLazyIssue(self):
+        # test laziness of these issue getters
+        tests = [
+            lambda issue, lazy: issue.get_comment(1234, lazy=lazy),
+        ]
+        self.doTestLazyObject(
+            lambda g, lazy: g.get_repo("PyGithub/PyGithub", lazy=True).get_issue(1234, lazy=lazy), tests
+        )

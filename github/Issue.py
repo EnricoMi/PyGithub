@@ -369,8 +369,9 @@ class Issue(CompletableGithubObject):
         :calls: `GET /repos/{owner}/{repo}/issues/comments/{id} <https://docs.github.com/en/rest/reference/issues#comments>`_
         """
         assert isinstance(id, int), id
+        assert is_optional(lazy, bool), lazy
         return github.IssueComment.IssueComment(
-            self._requester, url=f"{self._parentUrl(self.url)}/comments/{id}", transitive_lazy=self._transitiveLazy
+            self._requester, url=f"{self._parentUrl(self.url)}/comments/{id}", sticky_lazy=self.sticky_lazy
         ).do_complete_unless_lazy(lazy=lazy)
 
     def get_comments(self, since: Opt[datetime] = NotSet) -> PaginatedList[IssueComment]:
