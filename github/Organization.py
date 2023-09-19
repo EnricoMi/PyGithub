@@ -770,7 +770,6 @@ class Organization(CompletableGithubObject):
         :calls: `GET /orgs/{owner}/hooks/{hook_id}/deliveries/{delivery_id} <https://docs.github.com/en/rest/reference/orgs#get-a-webhook-delivery-for-an-organization-webhook>`_
         :param hook_id: integer
         :param delivery_id: integer
-        :param lazy: bool
         :rtype: :class:`github.HookDelivery.HookDelivery`
         """
         assert isinstance(hook_id, int), hook_id
