@@ -774,7 +774,7 @@ class Github:
             headers = {}
 
         if issubclass(klass, CompletableGithubObject):
-            return klass(self.__requester, headers, raw_data, completed=True)
+            return klass(self.__requester, headers, raw_data, completed=True)  # type: ignore
         return klass(self.__requester, headers, raw_data)
 
     def dump(self, obj: GithubObject, file: BinaryIO, protocol: int = 0) -> None:
