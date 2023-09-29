@@ -215,13 +215,15 @@ class Gist(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("PATCH", self.url, input=post_parameters)
         self._useAttributes(data)
 
-    def get_comment(self, id: int) -> GistComment:
+    def get_comment(self, id: int, lazy: Opt[bool] = NotSet) -> GistComment:
         """
         :calls: `GET /gists/{gist_id}/comments/{id} <https://docs.github.com/en/rest/reference/gists#comments>`_
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/comments/{id}")
-        return github.GistComment.GistComment(self._requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.GistComment.GistComment(
+            self._requester, url=f"{self.url}/comments/{id}", sticky_lazy=self.sticky_lazy
+        ).do_complete_unless_lazy(lazy=lazy)
 
     def get_comments(self) -> PaginatedList[GistComment]:
         """

@@ -430,13 +430,15 @@ class Github:
         )
         return github.ProjectColumn.ProjectColumn(self.__requester, headers, data, completed=True)
 
-    def get_gist(self, id: str) -> Gist:
+    def get_gist(self, id: str, lazy: Opt[bool] = NotSet) -> Gist:
         """
         :calls: `GET /gists/{id} <https://docs.github.com/en/rest/reference/gists>`_
         """
         assert isinstance(id, str), id
-        headers, data = self.__requester.requestJsonAndCheck("GET", f"/gists/{id}")
-        return github.Gist.Gist(self.__requester, headers, data, completed=True)
+        assert is_optional(lazy, bool), lazy
+        return github.Gist.Gist(self.__requester, url=f"/gists/{id}", sticky_lazy=self.__lazy).do_complete_unless_lazy(
+            lazy=lazy
+        )
 
     def get_gists(self, since: Opt[datetime] = NotSet) -> PaginatedList[Gist]:
         """
