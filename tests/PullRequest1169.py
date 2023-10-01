@@ -40,7 +40,8 @@ from . import Framework
 class PullRequest1169(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        ferada_repo = self.g.get_repo("coleslaw-org/coleslaw", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            ferada_repo = self.g.get_repo("coleslaw-org/coleslaw", lazy=True)
         self.pull = ferada_repo.get_pull(173)
 
     def testReviewApproveWithoutBody(self):

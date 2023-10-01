@@ -115,7 +115,7 @@ import github.NamedUser
 import github.Topic
 from github import Consts
 from github.GithubIntegration import GithubIntegration
-from github.GithubObject import CompletableGithubObject, GithubObject, NotSet, Opt, is_defined, is_optional
+from github.GithubObject import CompletableGithubObject, GithubObject, NotSet, Opt, is_defined
 from github.GithubRetry import GithubRetry
 from github.HookDelivery import HookDelivery, HookDeliverySummary
 from github.HookDescription import HookDescription
@@ -179,7 +179,8 @@ class Github:
         seconds_between_requests: float | None = Consts.DEFAULT_SECONDS_BETWEEN_REQUESTS,
         seconds_between_writes: float | None = Consts.DEFAULT_SECONDS_BETWEEN_WRITES,
         auth: github.Auth.Auth | None = None,
-        lazy: Opt[bool] = NotSet,
+        # v3: set lazy = True as the default
+        lazy: bool = False,
     ) -> None:
         """
         :param login_or_token: string deprecated, use auth=github.Auth.Login(...) or auth=github.Auth.Token(...) instead
@@ -198,7 +199,8 @@ class Github:
         :param seconds_between_requests: float
         :param seconds_between_writes: float
         :param auth: authentication method
-        :param lazy: objects created from this instance are lazy, as well as objects created from those, and so on
+        :param lazy: completable objects created from this instance are lazy,
+                     as well as completable objects created from those, and so on
         """
 
         assert login_or_token is None or isinstance(login_or_token, str), login_or_token
@@ -214,9 +216,7 @@ class Github:
         assert seconds_between_requests is None or seconds_between_requests >= 0
         assert seconds_between_writes is None or seconds_between_writes >= 0
         assert auth is None or isinstance(auth, github.Auth.Auth), auth
-        assert is_optional(lazy, bool), lazy
-
-        self.__lazy = lazy
+        assert isinstance(lazy, bool), lazy
 
         if password is not None:
             warnings.warn(
@@ -257,6 +257,7 @@ class Github:
             pool_size,
             seconds_between_requests,
             seconds_between_writes,
+            lazy,
         )
 
     def close(self) -> None:
@@ -365,12 +366,16 @@ class Github:
         """
         if login is NotSet:
             url = "/user"
-            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url)
+            # always return a lazy completable AuthenticatedUser
+            # v3: given github.Github(lazy=True) is now default, remove completed=False here
+            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url, completed=False)
         else:
             assert isinstance(login, str), login
             login = urllib.parse.quote(login)
             url = f"/users/{login}"
-            return github.NamedUser.NamedUser(self.__requester, url=url).do_complete()
+            # always return a completed NamedUser
+            # v3: remove complete() here and make this as lazy as github.Github is
+            return github.NamedUser.NamedUser(self.__requester, url=url).complete()
 
     def get_user_by_id(self, user_id: int) -> NamedUser:
         """
@@ -426,15 +431,24 @@ class Github:
         # There is no native "/enterprises/{enterprise}" api, so this function is a hub for apis that start with "/enterprise/{enterprise}".
         return github.Enterprise.Enterprise(self.__requester, enterprise)
 
+    # v3: remove lazy argument
     def get_repo(self, full_name_or_id: int | str, lazy: Opt[bool] = NotSet) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <https://docs.github.com/en/rest/reference/repos>`_ or `GET /repositories/{id} <https://docs.github.com/en/rest/reference/repos>`_
         """
         assert isinstance(full_name_or_id, (str, int)), full_name_or_id
         url_base = "/repositories/" if isinstance(full_name_or_id, int) else "/repos/"
-        return github.Repository.Repository(
-            self.__requester, url=f"{url_base}{full_name_or_id}", sticky_lazy=self.__lazy
-        ).do_complete_unless_lazy(lazy=lazy)
+
+        completed = None
+        if is_defined(lazy):
+            warnings.warn(
+                "Argument lazy is deprecated, please use github.Github(lazy).get_repo instead",
+                category=DeprecationWarning,
+            )
+            # complete has to be None if lazy is False but False if lazy is True
+            completed = False if lazy else None
+
+        return github.Repository.Repository(self.__requester, url=f"{url_base}{full_name_or_id}", completed=completed)
 
     def get_repos(
         self,

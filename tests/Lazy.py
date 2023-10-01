@@ -3,50 +3,28 @@ from __future__ import annotations
 from typing import Callable
 
 import github
-from github.GithubObject import CompletableGithubObject, NotSet, Opt, is_defined, is_undefined
-
+from github.GithubObject import CompletableGithubObject, NotSet, Opt
 from . import Framework
 
 
 class Lazy(Framework.TestCase):
-    def assertLaziness(self, obj: CompletableGithubObject, tests, sticky_lazy: Opt[bool], lazy: Opt[bool]):
+    def assertLaziness(self, obj: CompletableGithubObject, tests):
         self.assertIsInstance(obj, CompletableGithubObject)
-
-        is_lazy = lazy is True or is_undefined(lazy) and sticky_lazy is True
-        self.assertEqual(not is_lazy, obj.completed)
-
-        if is_defined(sticky_lazy):
-            self.assertTrue(is_defined(obj.sticky_lazy))
-            self.assertEqual(sticky_lazy, obj.sticky_lazy)
-        else:
-            self.assertTrue(is_undefined(obj.sticky_lazy))
+        self.assertEqual(False, obj.completed)
 
         for func in tests:
-            with self.subTest(child_lazy=True):
-                instance = func(obj, True)
-                with self.subTest(object_type=instance.__class__.__name__):
-                    self.assertLaziness(instance, [], sticky_lazy, True)
-
-            # do not test any cases that actually access the API
-            if sticky_lazy is True:
-                with self.subTest(child_lazy=NotSet):
-                    instance = func(obj, NotSet)
-                    with self.subTest(object_type=instance.__class__.__name__):
-                        self.assertLaziness(instance, [], sticky_lazy, NotSet)
+            instance = func(obj)
+            with self.subTest(object_type=instance.__class__.__name__):
+                self.assertLaziness(instance, [])
 
     def doTestLazyObject(
         self,
-        func: Callable[[github.Github, bool], CompletableGithubObject],
-        tests: list[Callable[[CompletableGithubObject, bool], CompletableGithubObject]],
+        func: Callable[[github.Github], CompletableGithubObject],
+        tests: list[Callable[[CompletableGithubObject], CompletableGithubObject]],
     ):
-        for sticky_lazy in [NotSet, False, True]:
-            for lazy in [NotSet, False, True]:
-                # do not test any cases that actually access the API
-                if lazy is True or is_undefined(lazy) and sticky_lazy is True:
-                    with self.subTest(sticky_lazy=sticky_lazy, lazy=lazy):
-                        g = github.Github(retry=None, lazy=sticky_lazy)  # type: ignore
-                        obj = func(g, lazy)  # type: ignore
-                        self.assertLaziness(obj, tests, sticky_lazy, lazy)  # type: ignore
+        g = github.Github(retry=None, lazy=True)
+        obj = func(g)
+        self.assertLaziness(obj, tests)
 
     def testLazyRepo(self):
         # fetches comment only
@@ -58,35 +36,27 @@ class Lazy(Framework.TestCase):
             .get_comment(560146023)
             .user.login,
         )
-        self.assertEqual(
-            "stale[bot]",
-            github.Github(retry=None)
-            .get_repo("PyGithub/PyGithub", lazy=True)
-            .get_issue(1234, lazy=True)
-            .get_comment(560146023)
-            .user.login,
-        )
 
         # test laziness of these repo getters
         tests = [
-            lambda repo, lazy: repo.get_artifact(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_branch("main", lazy=lazy),
-            lambda repo, lazy: repo.get_check_run(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_check_suite(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_comment(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_commit("SHA", lazy=lazy),
-            lambda repo, lazy: repo.get_deployment(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_download(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_git_blob("SHA", lazy=lazy),
-            lambda repo, lazy: repo.get_git_commit("SHA", lazy=lazy),
-            lambda repo, lazy: repo.get_git_ref("SHA", lazy=lazy),
-            lambda repo, lazy: repo.get_git_tag("tag", lazy=lazy),
-            lambda repo, lazy: repo.get_hook(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_issue(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_issues_event(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_key(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_label("label", lazy=lazy),
-            lambda repo, lazy: repo.get_milestone(1234, lazy=lazy),
-            lambda repo, lazy: repo.get_pull(1234, lazy=lazy),
+            lambda repo: repo.get_artifact(1234),
+            lambda repo: repo.get_branch("main"),
+            lambda repo: repo.get_check_run(1234),
+            lambda repo: repo.get_check_suite(1234),
+            lambda repo: repo.get_comment(1234),
+            lambda repo: repo.get_commit("SHA"),
+            lambda repo: repo.get_deployment(1234),
+            lambda repo: repo.get_download(1234),
+            lambda repo: repo.get_git_blob("SHA"),
+            lambda repo: repo.get_git_commit("SHA"),
+            lambda repo: repo.get_git_ref("SHA"),
+            lambda repo: repo.get_git_tag("tag"),
+            lambda repo: repo.get_hook(1234),
+            lambda repo: repo.get_issue(1234),
+            lambda repo: repo.get_issues_event(1234),
+            lambda repo: repo.get_key(1234),
+            lambda repo: repo.get_label("label"),
+            lambda repo: repo.get_milestone(1234),
+            lambda repo: repo.get_pull(1234),
         ]
-        self.doTestLazyObject(lambda g, lazy: g.get_repo("PyGithub/PyGithub", lazy=lazy), tests)
+        self.doTestLazyObject(lambda g: g.get_repo("PyGithub/PyGithub"), tests)
