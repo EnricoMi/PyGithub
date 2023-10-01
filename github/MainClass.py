@@ -262,7 +262,7 @@ class Github:
             lazy,
         )
 
-    def withLazy(self, lazy: bool) -> "Github":
+    def withLazy(self, lazy: bool) -> Github:
         """
         Create a Github instance with identical configuration but the given lazy setting.
         :param lazy: completable objects created from this instance are lazy,

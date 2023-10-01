@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Callable
 
 import github
-from github.GithubObject import CompletableGithubObject, NotSet, Opt
+from github.GithubObject import CompletableGithubObject
+
 from . import Framework
 
 

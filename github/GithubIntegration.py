@@ -161,10 +161,10 @@ class GithubIntegration:
             pool_size=pool_size,
             seconds_between_requests=seconds_between_requests,
             seconds_between_writes=seconds_between_writes,
-            lazy=lazy
+            lazy=lazy,
         )
 
-    def withLazy(self, lazy: bool) -> "GithubIntegration":
+    def withLazy(self, lazy: bool) -> GithubIntegration:
         """
         Create a GithubIntegration instance with identical configuration but the given lazy setting.
         :param lazy: completable objects created from this instance are lazy,
