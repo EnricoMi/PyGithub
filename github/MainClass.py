@@ -260,6 +260,17 @@ class Github:
             lazy,
         )
 
+    def withLazy(self, lazy: bool) -> "Github":
+        """
+        Create a Github instance with identical configuration but the given lazy setting.
+        :param lazy: completable objects created from this instance are lazy,
+                     as well as completable objects created from those, and so on
+        :return: new Github instance
+        """
+        kwargs = self.__requester.kwargs
+        kwargs.update(lazy=lazy)
+        return Github(**kwargs)
+
     def close(self) -> None:
         """Close connections to the server. Alternatively, use the Github
         object as a context manager:

@@ -43,12 +43,11 @@ from . import Framework
 class CommitCombinedStatus(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        with self.assertWarns(DeprecationWarning):
-            self.combined_status = (
-                self.g.get_repo("edx/edx-platform", lazy=True)
-                .get_commit("74e70119a23fa3ffb3db19d4590eccfebd72b659").complete()
-                .get_combined_status()
-            )
+        self.combined_status = (
+            self.g.withLazy(lazy=True).get_repo("edx/edx-platform")
+            .get_commit("74e70119a23fa3ffb3db19d4590eccfebd72b659").complete()
+            .get_combined_status()
+        )
 
     def testAttributes(self):
         self.assertEqual(self.combined_status.state, "success")

@@ -59,8 +59,7 @@ class PullRequest(Framework.TestCase):
         self.repo = self.g.get_repo("PyGithub/PyGithub")
         self.pull = self.repo.get_pull(31)
 
-        with self.assertWarns(DeprecationWarning):
-            marco_repo = self.g.get_repo("MarcoFalke/PyGithub", lazy=True)
+        marco_repo = self.g.withLazy(lazy=True).get_repo("MarcoFalke/PyGithub")
         self.pullIssue256Closed = marco_repo.get_pull(1).complete()
         self.pullIssue256Merged = marco_repo.get_pull(2).complete()
         self.pullIssue256Conflict = marco_repo.get_pull(3).complete()
