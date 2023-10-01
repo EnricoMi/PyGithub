@@ -49,8 +49,7 @@ class Branch(Framework.TestCase):
         self.repo = self.g.get_user().get_repo("PyGithub")
         self.branch = self.repo.get_branch("topic/RewriteWithGeneratedCode")
         self.protected_branch = self.repo.get_branch("integrations")
-        with self.assertWarns(DeprecationWarning):
-            self.organization_branch = self.g.get_repo("PyGithub/PyGithub", lazy=True).get_branch("master").complete()
+        self.organization_branch = self.g.get_repo("PyGithub/PyGithub").get_branch("master")
 
     def testAttributes(self):
         self.assertEqual(self.branch.name, "topic/RewriteWithGeneratedCode")
