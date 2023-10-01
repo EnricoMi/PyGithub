@@ -51,7 +51,8 @@ class PullRequestReview(Framework.TestCase):
     def setUp(self):
         super().setUp()
 
-        self.repo = self.g.get_repo("PyGithub/PyGithub", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            self.repo = self.g.get_repo("PyGithub/PyGithub", lazy=True)
         self.pull = self.repo.get_pull(538)
 
         # Test ability to create a review

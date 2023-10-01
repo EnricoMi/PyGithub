@@ -43,7 +43,8 @@ class Pickle(unittest.TestCase):
 
     def testPickleRepository(self):
         gh = github.Github()
-        repo = gh.get_repo(REPO_NAME, lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            repo = gh.get_repo(REPO_NAME, lazy=True)
         repo2 = pickle.loads(pickle.dumps(repo))
         self.assertIsInstance(repo2, Repository)
         self.assertIsNotNone(repo2._requester._Requester__connection_lock)

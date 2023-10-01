@@ -2040,19 +2040,15 @@ class Repository(CompletableGithubObject):
         """
         return PaginatedList(github.NamedUser.NamedUser, self._requester, f"{self.url}/assignees", None)
 
-    def get_branch(self, branch: str, lazy: Opt[bool] = NotSet) -> Branch:
+    def get_branch(self, branch: str) -> Branch:
         """
         :calls: `GET /repos/{owner}/{repo}/branches/{branch} <https://docs.github.com/en/rest/reference/repos#get-a-branch>`_
         :param branch: string
-        :param lazy: bool
         :rtype: :class:`github.Branch.Branch`
         """
         assert isinstance(branch, str), branch
-        assert is_optional(lazy, bool), lazy
         branch = urllib.parse.quote(branch)
-        return github.Branch.Branch(
-            self._requester, url=f"{self.url}/branches/{branch}", sticky_lazy=self.sticky_lazy
-        ).do_complete_unless_lazy(lazy=lazy)
+        return github.Branch.Branch(self._requester, url=f"{self.url}/branches/{branch}")
 
     def rename_branch(self, branch: str | Branch, new_name: str) -> bool:
         """
@@ -2112,20 +2108,14 @@ class Repository(CompletableGithubObject):
             url_parameters,
         )
 
-    def get_comment(self, id: int, lazy: Opt[bool] = NotSet) -> CommitComment:
+    def get_comment(self, id: int) -> CommitComment:
         """
         :calls: `GET /repos/{owner}/{repo}/comments/{id} <https://docs.github.com/en/rest/reference/repos#comments>`_
         :param id: integer
-        :param lazy: bool
         :rtype: :class:`github.CommitComment.CommitComment`
         """
         assert isinstance(id, int), id
-        assert is_optional(lazy, bool), lazy
-        return github.CommitComment.CommitComment(
-            self._requester,
-            url=f"{self.url}/comments/{id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        return github.CommitComment.CommitComment(self._requester, url=f"{self.url}/comments/{id}")
 
     def get_comments(self) -> PaginatedList[CommitComment]:
         """
@@ -2139,21 +2129,18 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_commit(self, sha: str, lazy: Opt[bool] = NotSet) -> Commit:
+    def get_commit(self, sha: str) -> Commit:
         """
         :calls: `GET /repos/{owner}/{repo}/commits/{sha} <https://docs.github.com/en/rest/reference/repos#commits>`_
         :param sha: string
-        :param lazy: bool
         :rtype: :class:`github.Commit.Commit`
         """
         assert isinstance(sha, str), sha
-        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.Commit.Commit(
             self._requester,
             url=f"{self.url}/commits/{sha}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_commits(
         self,
@@ -2269,21 +2256,18 @@ class Repository(CompletableGithubObject):
             headers={"Accept": Consts.deploymentEnhancementsPreview},
         )
 
-    def get_deployment(self, id_: int, lazy: Opt[bool] = NotSet) -> Deployment:
+    def get_deployment(self, id_: int) -> Deployment:
         """
         :calls: `GET /repos/{owner}/{repo}/deployments/{deployment_id} <https://docs.github.com/en/rest/reference/repos#deployments>`_
         :param: id_: int
-        :param: lazy: bool
         :rtype: :class:`github.Deployment.Deployment`
         """
         assert isinstance(id_, int), id_
-        assert is_optional(lazy, bool), lazy
         return github.Deployment.Deployment(
             self._requester,
             url=f"{self.url}/deployments/{id_}",
             accept=Consts.deploymentEnhancementsPreview,
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def create_deployment(
         self,
@@ -2492,23 +2476,18 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_repository_advisory(
-        self, ghsa: str, lazy: Opt[bool] = NotSet
-    ) -> github.RepositoryAdvisory.RepositoryAdvisory:
+    def get_repository_advisory(self, ghsa: str) -> github.RepositoryAdvisory.RepositoryAdvisory:
         """
         :calls: `GET /repos/{owner}/{repo}/security-advisories/{ghsa} <https://docs.github.com/en/rest/security-advisories/repository-advisories>`_
         :param ghsa: string
-        :param lazy: bool
         :rtype: :class:`github.RepositoryAdvisory.RepositoryAdvisory`
         """
         assert isinstance(ghsa, str), ghsa
-        assert is_optional(lazy, bool), lazy
         ghsa = urllib.parse.quote(ghsa)
         return github.RepositoryAdvisory.RepositoryAdvisory(
             self._requester,
             url=f"{self.url}/security-advisories/{ghsa}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def update_file(
         self,
@@ -2650,20 +2629,17 @@ class Repository(CompletableGithubObject):
             url_parameters,
         )
 
-    def get_download(self, id: int, lazy: Opt[bool] = NotSet) -> Download:
+    def get_download(self, id: int) -> Download:
         """
         :calls: `GET /repos/{owner}/{repo}/downloads/{id} <https://docs.github.com/en/rest/reference/repos>`_
         :param id: integer
-        :param lazy: bool
         :rtype: :class:`github.Download.Download`
         """
         assert isinstance(id, int), id
-        assert is_optional(lazy, bool), lazy
         return github.Download.Download(
             self._requester,
             url=f"{self.url}/downloads/{id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_downloads(self) -> PaginatedList[Download]:
         """
@@ -2719,56 +2695,47 @@ class Repository(CompletableGithubObject):
         )
         return Repository(self._requester, headers, data, completed=True)
 
-    def get_git_blob(self, sha: str, lazy: Opt[bool] = NotSet) -> GitBlob:
+    def get_git_blob(self, sha: str) -> GitBlob:
         """
         :calls: `GET /repos/{owner}/{repo}/git/blobs/{sha} <https://docs.github.com/en/rest/reference/git#blobs>`_
         :param sha: string
-        :param lazy: bool
         :rtype: :class:`github.GitBlob.GitBlob`
         """
         assert isinstance(sha, str), sha
-        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.GitBlob.GitBlob(
             self._requester,
             url=f"{self.url}/git/blobs/{sha}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
-    def get_git_commit(self, sha: str, lazy: Opt[bool] = NotSet) -> GitCommit:
+    def get_git_commit(self, sha: str) -> GitCommit:
         """
         :calls: `GET /repos/{owner}/{repo}/git/commits/{sha} <https://docs.github.com/en/rest/reference/git#commits>`_
         :param sha: string
-        :param lazy: bool
         :rtype: :class:`github.GitCommit.GitCommit`
         """
         assert isinstance(sha, str), sha
-        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.GitCommit.GitCommit(
             self._requester,
             url=f"{self.url}/git/commits/{sha}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
-    def get_git_ref(self, ref: str, lazy: Opt[bool] = NotSet) -> GitRef:
+    def get_git_ref(self, ref: str) -> GitRef:
         """
         :calls: `GET /repos/{owner}/{repo}/git/refs/{ref} <https://docs.github.com/en/rest/reference/git#references>`_
         :param ref: string
-        :param lazy: bool
         :rtype: :class:`github.GitRef.GitRef`
         """
         prefix = "/git/refs/"
         if not self._requester.FIX_REPO_GET_GIT_REF:
             prefix = "/git/"
         assert isinstance(ref, str), ref
-        assert is_optional(lazy, bool), lazy
         ref = urllib.parse.quote(ref)
         return github.GitRef.GitRef(
             self._requester,
             url=f"{self.url}{prefix}{ref}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_git_refs(self) -> PaginatedList[GitRef]:
         """
@@ -2791,21 +2758,18 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_git_tag(self, sha: str, lazy: Opt[bool] = NotSet) -> GitTag:
+    def get_git_tag(self, sha: str) -> GitTag:
         """
         :calls: `GET /repos/{owner}/{repo}/git/tags/{sha} <https://docs.github.com/en/rest/reference/git#tags>`_
         :param sha: string
-        :param lazy: bool
         :rtype: :class:`github.GitTag.GitTag`
         """
         assert isinstance(sha, str), sha
-        assert is_optional(lazy, bool), lazy
         sha = urllib.parse.quote(sha)
         return github.GitTag.GitTag(
             self._requester,
             url=f"{self.url}/git/tags/{sha}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_git_tree(self, sha: str, recursive: Opt[bool] = NotSet) -> GitTree:
         """
@@ -2826,20 +2790,17 @@ class Repository(CompletableGithubObject):
         )
         return github.GitTree.GitTree(self._requester, headers, data, completed=True)
 
-    def get_hook(self, id: int, lazy: Opt[bool] = NotSet) -> Hook:
+    def get_hook(self, id: int) -> Hook:
         """
         :calls: `GET /repos/{owner}/{repo}/hooks/{id} <https://docs.github.com/en/rest/reference/repos#webhooks>`_
         :param id: integer
-        :param lazy: bool
         :rtype: :class:`github.Hook.Hook`
         """
         assert isinstance(id, int), id
-        assert is_optional(lazy, bool), lazy
         return github.Hook.Hook(
             self._requester,
             url=f"{self.url}/hooks/{id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_hooks(self) -> PaginatedList[Hook]:
         """
@@ -2877,20 +2838,17 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_issue(self, number: int, lazy: Opt[bool] = NotSet) -> Issue:
+    def get_issue(self, number: int) -> Issue:
         """
         :calls: `GET /repos/{owner}/{repo}/issues/{number} <https://docs.github.com/en/rest/reference/issues>`_
         :param number: integer
-        :param lazy: bool
         :rtype: :class:`github.Issue.Issue`
         """
         assert isinstance(number, int), number
-        assert is_optional(lazy, bool), lazy
         return github.Issue.Issue(
             self._requester,
             url=f"{self.url}/issues/{number}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_issues(
         self,
@@ -2988,21 +2946,18 @@ class Repository(CompletableGithubObject):
             url_parameters,
         )
 
-    def get_issues_event(self, id: int, lazy: Opt[bool] = NotSet) -> IssueEvent:
+    def get_issues_event(self, id: int) -> IssueEvent:
         """
         :calls: `GET /repos/{owner}/{repo}/issues/events/{id} <https://docs.github.com/en/rest/reference/issues#events>`_
         :param id: integer
-        :param lazy: bool
         :rtype: :class:`github.IssueEvent.IssueEvent`
         """
         assert isinstance(id, int), id
-        assert is_optional(lazy, bool), lazy
         return github.IssueEvent.IssueEvent(
             self._requester,
             url=f"{self.url}/issues/events/{id}",
             accept=Consts.mediaTypeLockReasonPreview,
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_issues_events(self) -> PaginatedList[IssueEvent]:
         """
@@ -3017,20 +2972,17 @@ class Repository(CompletableGithubObject):
             headers={"Accept": Consts.mediaTypeLockReasonPreview},
         )
 
-    def get_key(self, id: int, lazy: Opt[bool] = NotSet) -> RepositoryKey:
+    def get_key(self, id: int) -> RepositoryKey:
         """
         :calls: `GET /repos/{owner}/{repo}/keys/{id} <https://docs.github.com/en/rest/reference/repos#deploy-keys>`_
         :param id: integer
-        :param lazy: bool
         :rtype: :class:`github.RepositoryKey.RepositoryKey`
         """
         assert isinstance(id, int), id
-        assert is_optional(lazy, bool), lazy
         return github.RepositoryKey.RepositoryKey(
             self._requester,
             url=f"{self.url}/keys/{id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_keys(self) -> PaginatedList[RepositoryKey]:
         """
@@ -3044,20 +2996,17 @@ class Repository(CompletableGithubObject):
             None,
         )
 
-    def get_label(self, name: str, lazy: Opt[bool] = NotSet) -> Label:
+    def get_label(self, name: str) -> Label:
         """
         :calls: `GET /repos/{owner}/{repo}/labels/{name} <https://docs.github.com/en/rest/reference/issues#labels>`_
         :param name: string
-        :param lazy: bool
         :rtype: :class:`github.Label.Label`
         """
         assert isinstance(name, str), name
-        assert is_optional(lazy, bool), lazy
         return github.Label.Label(
             self._requester,
             url=f"{self.url}/labels/{urllib.parse.quote(name)}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_labels(self) -> PaginatedList[Label]:
         """
@@ -3083,20 +3032,17 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/license")
         return github.ContentFile.ContentFile(self._requester, headers, data, completed=True)
 
-    def get_milestone(self, number: int, lazy: Opt[bool] = NotSet) -> Milestone:
+    def get_milestone(self, number: int) -> Milestone:
         """
         :calls: `GET /repos/{owner}/{repo}/milestones/{number} <https://docs.github.com/en/rest/reference/issues#milestones>`_
         :param number: integer
-        :param lazy: bool
         :rtype: :class:`github.Milestone.Milestone`
         """
         assert isinstance(number, int), number
-        assert is_optional(lazy, bool), lazy
         return github.Milestone.Milestone(
             self._requester,
             url=f"{self.url}/milestones/{number}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_milestones(
         self,
@@ -3151,20 +3097,17 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/{secret_type}/secrets/public-key")
         return github.PublicKey.PublicKey(self._requester, headers, data, completed=True)
 
-    def get_pull(self, number: int, lazy: Opt[bool] = NotSet) -> PullRequest:
+    def get_pull(self, number: int) -> PullRequest:
         """
         :calls: `GET /repos/{owner}/{repo}/pulls/{number} <https://docs.github.com/en/rest/reference/pulls>`_
         :param number: integer
-        :param lazy: bool
         :rtype: :class:`github.PullRequest.PullRequest`
         """
         assert isinstance(number, int), number
-        assert is_optional(lazy, bool), lazy
         return github.PullRequest.PullRequest(
             self._requester,
             url=f"{self.url}/pulls/{number}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_pulls(
         self,
@@ -3406,11 +3349,10 @@ class Repository(CompletableGithubObject):
         """
         return PaginatedList(github.GitRelease.GitRelease, self._requester, f"{self.url}/releases", None)
 
-    def get_release(self, id: int | str, lazy: Opt[bool] = NotSet) -> GitRelease:
+    def get_release(self, id: int | str) -> GitRelease:
         """
         :calls: `GET /repos/{owner}/{repo}/releases/{id} <https://docs.github.com/en/rest/reference/repos#get-a-release>`_
         :param id: int (release id), str (tag name)
-        :param lazy: bool
         :rtype: None or :class:`github.GitRelease.GitRelease`
         """
         assert isinstance(id, (int, str)), id
@@ -3423,8 +3365,7 @@ class Repository(CompletableGithubObject):
         return github.GitRelease.GitRelease(
             self._requester,
             url=url,
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_latest_release(self) -> GitRelease:
         """
@@ -3473,21 +3414,18 @@ class Repository(CompletableGithubObject):
             list_item="workflows",
         )
 
-    def get_workflow(self, id_or_file_name: str | int, lazy: Opt[bool] = NotSet) -> Workflow:
+    def get_workflow(self, id_or_file_name: str | int) -> Workflow:
         """
         :calls: `GET /repos/{owner}/{repo}/actions/workflows/{workflow_id} <https://docs.github.com/en/rest/reference/actions#workflows>`_
         :param id_or_file_name: int or string. Can be either a workflow ID or a filename.
-        :param lazy: bool
         :rtype: :class:`github.Workflow.Workflow`
         """
         assert isinstance(id_or_file_name, (int, str)), id_or_file_name
-        assert is_optional(lazy, bool), lazy
         id_or_file_name = urllib.parse.quote(str(id_or_file_name))
         return github.Workflow.Workflow(
             self._requester,
             url=f"{self.url}/actions/workflows/{id_or_file_name}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_workflow_runs(
         self,
@@ -3554,20 +3492,17 @@ class Repository(CompletableGithubObject):
             list_item="workflow_runs",
         )
 
-    def get_workflow_run(self, id_: int, lazy: Opt[bool] = NotSet) -> WorkflowRun:
+    def get_workflow_run(self, id_: int) -> WorkflowRun:
         """
         :calls: `GET /repos/{owner}/{repo}/actions/runs/{run_id} <https://docs.github.com/en/rest/reference/actions#workflow-runs>`_
         :param id_: int
-        :param lazy: bool
         :rtype: :class:`github.WorkflowRun.WorkflowRun`
         """
         assert isinstance(id_, int)
-        assert is_optional(lazy, bool), lazy
         return github.WorkflowRun.WorkflowRun(
             self._requester,
             url=f"{self.url}/actions/runs/{id_}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def has_in_assignees(self, assignee: str | NamedUser) -> bool:
         """
@@ -3860,21 +3795,18 @@ class Repository(CompletableGithubObject):
         )
         return github.CheckSuite.CheckSuite(self._requester, headers, data, completed=True)
 
-    def get_check_suite(self, check_suite_id: int, lazy: Opt[bool] = NotSet) -> CheckSuite:
+    def get_check_suite(self, check_suite_id: int) -> CheckSuite:
         """
         :calls: `GET /repos/{owner}/{repo}/check-suites/{check_suite_id} <https://docs.github.com/en/rest/reference/checks#get-a-check-suite>`_
         :param check_suite_id: int
-        :param lazy: bool
         :rtype: :class:`github.CheckSuite.CheckSuite`
         """
         assert isinstance(check_suite_id, int), check_suite_id
-        assert is_optional(lazy, bool), lazy
         return github.CheckSuite.CheckSuite(
             self._requester,
             url=f"{self.url}/check-suites/{check_suite_id}",
             accept="application/vnd.github.v3+json",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def update_check_suites_preferences(
         self, auto_trigger_checks: list[dict[str, bool | int]]
@@ -3912,14 +3844,12 @@ class Repository(CompletableGithubObject):
     def _identity(self) -> str:
         return f"{self.owner.login}/{self.name}"
 
-    def get_release_asset(self, id: int, lazy: Opt[bool] = NotSet) -> GitReleaseAsset:
+    def get_release_asset(self, id: int) -> GitReleaseAsset:
         assert isinstance(id, (int)), id
-        assert is_optional(lazy, bool), lazy
         return github.GitReleaseAsset.GitReleaseAsset(
             self._requester,
             url=f"{self.url}/releases/assets/{id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def create_check_run(
         self,
@@ -3984,20 +3914,17 @@ class Repository(CompletableGithubObject):
         )
         return github.CheckRun.CheckRun(self._requester, headers, data, completed=True)
 
-    def get_check_run(self, check_run_id: int, lazy: Opt[bool] = NotSet) -> CheckRun:
+    def get_check_run(self, check_run_id: int) -> CheckRun:
         """
         :calls: `GET /repos/{owner}/{repo}/check-runs/{check_run_id} <https://docs.github.com/en/rest/reference/checks#get-a-check-run>`_
         :param check_run_id: int
-        :param lazy: bool
         :rtype: :class:`github.CheckRun.CheckRun`
         """
         assert isinstance(check_run_id, int), check_run_id
-        assert is_optional(lazy, bool), lazy
         return github.CheckRun.CheckRun(
             self._requester,
             url=f"{self.url}/check-runs/{check_run_id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_artifacts(self, name: Opt[str] = NotSet) -> PaginatedList[Artifact]:
         """
@@ -4018,20 +3945,17 @@ class Repository(CompletableGithubObject):
             list_item="artifacts",
         )
 
-    def get_artifact(self, artifact_id: int, lazy: Opt[bool] = NotSet) -> Artifact:
+    def get_artifact(self, artifact_id: int) -> Artifact:
         """
         :calls: `GET /repos/{owner}/{repo}/actions/artifacts/{artifact_id} <https://docs.github.com/en/rest/actions/artifacts#get-an-artifact>`_
         :param artifact_id: int
-        :param lazy: bool
         :rtype: :class:`github.Artifact.Artifact`
         """
         assert isinstance(artifact_id, int), artifact_id
-        assert is_optional(lazy, bool), lazy
         return github.Artifact.Artifact(
             self._requester,
             url=f"{self.url}/actions/artifacts/{artifact_id}",
-            sticky_lazy=self.sticky_lazy,
-        ).do_complete_unless_lazy(lazy=lazy)
+        )
 
     def get_codescan_alerts(self) -> PaginatedList[CodeScanAlert]:
         """

@@ -47,7 +47,10 @@
 #                                                                              #
 ################################################################################
 
+from __future__ import annotations
+
 import email.utils
+
 import typing
 from abc import ABC
 from datetime import datetime, timezone
@@ -398,13 +401,12 @@ class CompletableGithubObject(GithubObject, ABC):
     def __init__(
         self,
         requester: "Requester",
-        headers: Optional[Dict[str, Union[str, int]]] = None,
-        attributes: Optional[Dict[str, Any]] = None,
-        completed: bool = False,
+        headers: dict[str, Union[str, int]] | None = None,
+        attributes: dict[str, Any] | None = None,
+        completed: bool | None = None,
         *,
         url: Optional[str] = None,
         accept: Optional[str] = None,
-        sticky_lazy: Opt[bool] = NotSet,
     ):
         """
         A CompletableGithubObject can be partially initialised (completed=False).
@@ -412,11 +414,12 @@ class CompletableGithubObject(GithubObject, ABC):
         to complete all attributes.
 
         A partially initialized CompletableGithubObject (completed=False) can be completed
-        via do_complete(), or via do_complete_unless_lazy(lazy=lazy) if lazy and sticky_lazy
-        are not True. This requires the url to be given via parameter `url` or `attributes`.
+        via complete(). This requires the url to be given via parameter `url` or `attributes`.
 
-        With `sticky_lazy=True`, CompletableGithubObjects created from this object
-        will be lazy themselves (where implemented).
+        With a requester where `Requester.is_lazy == True`, this CompletableGithubObjects is
+        partially initialized. This requires the url to be given via parameter `url` or `attributes`.
+        Any CompletableGithubObject created from this lazy object will be lazy itself if created with
+        parameter `url` or `attributes`.
 
         :param requester: requester
         :param headers: response headers
@@ -424,8 +427,10 @@ class CompletableGithubObject(GithubObject, ABC):
         :param completed: do not update non-initialized attributes when True
         :param url: url of this instance, overrides attributes['url']
         :param accept: use this accept header when completing this instance
-        :param sticky_lazy: completable objects created from this objects shall be lazy
         """
+        response_given = headers is not None or attributes is not None
+        completed_given = completed is not None
+
         if headers is None:
             headers = {}
         if attributes is None:
@@ -433,9 +438,13 @@ class CompletableGithubObject(GithubObject, ABC):
         if url is not None:
             attributes["url"] = url
         super().__init__(requester, headers, attributes)
-        self.__completed = completed
+        self.__completed = completed if completed_given else False
         self.__completeHeaders = {"Accept": accept} if accept else None
-        self.__sticky_lazy = sticky_lazy
+
+        # complete this completable object when requester indicates laziness and
+        # neither of complete, headers and attributes are given
+        if requester.is_not_lazy and not completed_given and not response_given:
+            self.complete()
 
     def __eq__(self, other: Any) -> bool:
         return other.__class__ is self.__class__ and other._url.value == self._url.value
@@ -450,9 +459,9 @@ class CompletableGithubObject(GithubObject, ABC):
     def completed(self) -> bool:
         return self.__completed
 
-    @property
-    def sticky_lazy(self) -> Opt[bool]:
-        return self.__sticky_lazy
+    def complete(self) -> Self:
+        self._completeIfNeeded()
+        return self
 
     def _completeIfNotSet(self, value: Attribute) -> None:
         if isinstance(value, _NotSetType):
@@ -464,27 +473,10 @@ class CompletableGithubObject(GithubObject, ABC):
 
     def __complete(self) -> None:
         if self._url.value is None:
-            raise IncompletableObject(400, message="Returned object contains no URL")
+            raise IncompletableObject(400, message="Cannot complete object as it contains no URL")
         headers, data = self._requester.requestJsonAndCheck("GET", self._url.value, headers=self.__completeHeaders)
         self._storeAndUseAttributes(headers, data)
         self.__completed = True
-
-    def do_complete_unless_lazy(self, lazy: Opt[bool]) -> Self:
-        if isinstance(lazy, bool):
-            if not lazy:
-                self._completeIfNeeded()
-            return self
-        elif isinstance(self.sticky_lazy, bool):
-            if not lazy:
-                self._completeIfNeeded()
-            return self
-
-        self._completeIfNeeded()
-        return self
-
-    def do_complete(self) -> Self:
-        self._completeIfNeeded()
-        return self
 
     def update(self, additional_headers: Optional[Dict[str, Any]] = None) -> bool:
         """

@@ -43,7 +43,8 @@ from . import Framework
 class IssueEvent(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        repo = self.g.get_repo("PyGithub/PyGithub", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            repo = self.g.get_repo("PyGithub/PyGithub", lazy=True)
 
         # From Issue #30
         self.event_subscribed = repo.get_issues_event(16347479)

@@ -2020,10 +2020,12 @@ class LazyRepository(Framework.TestCase):
         self.repository_name = f"{self.user.login}/PyGithub"
 
     def getLazyRepository(self):
-        return self.g.get_repo(self.repository_name, lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            return self.g.get_repo(self.repository_name, lazy=True)
 
     def getEagerRepository(self):
-        return self.g.get_repo(self.repository_name, lazy=False)
+        with self.assertWarns(DeprecationWarning):
+            return self.g.get_repo(self.repository_name, lazy=False)
 
     def testGetIssues(self):
         lazy_repo = self.getLazyRepository()
@@ -2042,35 +2044,40 @@ class LazyRepository(Framework.TestCase):
         lazy_repo = self.getLazyRepository()
         self.assertTrue(lazy_repo.enable_vulnerability_alert())
 
-        lazy_repo = self.g.get_repo("random", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            lazy_repo = self.g.get_repo("random", lazy=True)
         self.assertFalse(lazy_repo.enable_vulnerability_alert())
 
     def testEnableAutomatedSecurityFixes(self):
         lazy_repo = self.getLazyRepository()
         self.assertTrue(lazy_repo.enable_automated_security_fixes())
 
-        lazy_repo = self.g.get_repo("random", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            lazy_repo = self.g.get_repo("random", lazy=True)
         self.assertFalse(lazy_repo.enable_automated_security_fixes())
 
     def testDisableAutomatedSecurityFixes(self):
         lazy_repo = self.getLazyRepository()
         self.assertTrue(lazy_repo.disable_automated_security_fixes())
 
-        lazy_repo = self.g.get_repo("random", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            lazy_repo = self.g.get_repo("random", lazy=True)
         self.assertFalse(lazy_repo.disable_automated_security_fixes())
 
     def testGetVulnerabilityAlert(self):
         lazy_repo = self.getEagerRepository()
         self.assertTrue(lazy_repo.get_vulnerability_alert())
 
-        lazy_repo = self.g.get_repo("random", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            lazy_repo = self.g.get_repo("random", lazy=True)
         self.assertFalse(lazy_repo.get_vulnerability_alert())
 
     def testDisableVulnerabilityAlert(self):
         lazy_repo = self.getLazyRepository()
         self.assertTrue(lazy_repo.disable_vulnerability_alert())
 
-        lazy_repo = self.g.get_repo("random", lazy=True)
+        with self.assertWarns(DeprecationWarning):
+            lazy_repo = self.g.get_repo("random", lazy=True)
         self.assertFalse(lazy_repo.disable_vulnerability_alert())
 
     def testChangeAutomateFixWhenNoVulnerabilityAlert(self):
