@@ -60,34 +60,42 @@ class GlobalAdvisory(AdvisoryBase):
     def credits(
         self,
     ) -> list[AdvisoryCreditDetailed]:
+        self._completeIfNotSet(self._credits)
         return self._credits.value
 
     @property
     def github_reviewed_at(self) -> datetime:
+        self._completeIfNotSet(self._github_reviewed_at)
         return self._github_reviewed_at.value
 
     @property
     def nvd_published_at(self) -> datetime:
+        self._completeIfNotSet(self._nvd_published_at)
         return self._nvd_published_at.value
 
     @property
     def references(self) -> list[str]:
+        self._completeIfNotSet(self._references)
         return self._references.value
 
     @property
     def repository_advisory_url(self) -> str:
+        self._completeIfNotSet(self._repository_advisory_url)
         return self._repository_advisory_url.value
 
     @property
     def source_code_location(self) -> str:
+        self._completeIfNotSet(self._source_code_location)
         return self._source_code_location.value
 
     @property
     def type(self) -> str:
+        self._completeIfNotSet(self._type)
         return self._type.value
 
     @property
     def vulnerabilities(self) -> list[AdvisoryVulnerability]:
+        self._completeIfNotSet(self._vulnerabilities)
         return self._vulnerabilities.value
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
