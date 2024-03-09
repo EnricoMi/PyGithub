@@ -432,7 +432,7 @@ class CompletableGithubObject(GithubObject, ABC):
         self.__completed = completed if isinstance(completed, bool) else False
         self.__completeHeaders = {"Accept": accept} if accept else None
 
-        # complete this completable object when requester indicates laziness and
+        # complete this completable object when requester indicates non-laziness and
         # neither of complete, headers and attributes are given
         if requester.is_not_lazy and completed is None and not response_given:
             self.complete()
