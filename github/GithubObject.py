@@ -205,8 +205,6 @@ class GithubObject(ABC):
         """
         :type: dict
         """
-        if isinstance(self, CompletableGithubObject):
-            self._completeIfNeeded()
         return self._rawData
 
     @property
@@ -214,8 +212,6 @@ class GithubObject(ABC):
         """
         :type: dict
         """
-        if isinstance(self, CompletableGithubObject):
-            self._completeIfNeeded()
         return self._headers
 
     @staticmethod
@@ -472,6 +468,22 @@ class CompletableGithubObject(GithubObject, ABC):
         headers, data = self._requester.requestJsonAndCheck("GET", self._url.value, headers=self.__completeHeaders)
         self._storeAndUseAttributes(headers, data)
         self.__completed = True
+
+    @property
+    def raw_data(self) -> dict[str, Any]:
+        """
+        :type: dict
+        """
+        self._completeIfNeeded()
+        return super().raw_data
+
+    @property
+    def raw_headers(self) -> dict[str, str | int]:
+        """
+        :type: dict
+        """
+        self._completeIfNeeded()
+        return super().raw_headers
 
     def update(self, additional_headers: dict[str, Any] | None = None) -> bool:
         """
