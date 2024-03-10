@@ -48,12 +48,10 @@ class DependabotAlertAdvisory(github.AdvisoryBase.AdvisoryBase):
 
     @property
     def references(self) -> list[dict]:
-        self._completeIfNotSet(self._references)
         return self._references.value
 
     @property
     def vulnerabilities(self) -> list[DependabotAlertVulnerability]:
-        self._completeIfNotSet(self._vulnerabilities)
         return self._vulnerabilities.value
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:

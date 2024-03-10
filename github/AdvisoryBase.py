@@ -29,10 +29,10 @@ from typing import Any
 
 from github.CVSS import CVSS
 from github.CWE import CWE
-from github.GithubObject import Attribute, CompletableGithubObject, NotSet
+from github.GithubObject import Attribute, NonCompletableGithubObject, NotSet
 
 
-class AdvisoryBase(CompletableGithubObject):
+class AdvisoryBase(NonCompletableGithubObject):
     """
     This class represents a the shared attributes between GlobalAdvisory, RepositoryAdvisory and DependabotAdvisory
     https://docs.github.com/en/rest/security-advisories/global-advisories
@@ -60,57 +60,46 @@ class AdvisoryBase(CompletableGithubObject):
 
     @property
     def cve_id(self) -> str:
-        self._completeIfNotSet(self._cve_id)
         return self._cve_id.value
 
     @property
     def cvss(self) -> CVSS:
-        self._completeIfNotSet(self._cvss)
         return self._cvss.value
 
     @property
     def cwes(self) -> list[CWE]:
-        self._completeIfNotSet(self._cwes)
         return self._cwes.value
 
     @property
     def description(self) -> str:
-        self._completeIfNotSet(self._description)
         return self._description.value
 
     @property
     def ghsa_id(self) -> str:
-        self._completeIfNotSet(self._ghsa_id)
         return self._ghsa_id.value
 
     @property
     def html_url(self) -> str:
-        self._completeIfNotSet(self._html_url)
         return self._html_url.value
 
     @property
     def identifiers(self) -> list[dict]:
-        self._completeIfNotSet(self._identifiers)
         return self._identifiers.value
 
     @property
     def published_at(self) -> datetime:
-        self._completeIfNotSet(self._published_at)
         return self._published_at.value
 
     @property
     def severity(self) -> str:
-        self._completeIfNotSet(self._severity)
         return self._severity.value
 
     @property
     def summary(self) -> str:
-        self._completeIfNotSet(self._summary)
         return self._summary.value
 
     @property
     def updated_at(self) -> datetime:
-        self._completeIfNotSet(self._updated_at)
         return self._updated_at.value
 
     @property
@@ -119,7 +108,6 @@ class AdvisoryBase(CompletableGithubObject):
 
     @property
     def withdrawn_at(self) -> datetime:
-        self._completeIfNotSet(self._withdrawn_at)
         return self._withdrawn_at.value
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:

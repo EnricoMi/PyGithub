@@ -64,46 +64,38 @@ class RepositoryAdvisory(AdvisoryBase):
 
     @property
     def author(self) -> NamedUser:
-        self._completeIfNotSet(self._author)
         return self._author.value
 
     @property
     def closed_at(self) -> datetime:
-        self._completeIfNotSet(self._closed_at)
         return self._closed_at.value
 
     @property
     def created_at(self) -> datetime:
-        self._completeIfNotSet(self._created_at)
         return self._created_at.value
 
     @property
     def credits(
         self,
     ) -> list[AdvisoryCredit]:
-        self._completeIfNotSet(self._credits)
         return self._credits.value
 
     @property
     def credits_detailed(
         self,
     ) -> list[AdvisoryCreditDetailed]:
-        self._completeIfNotSet(self._credits_detailed)
         return self._credits_detailed.value
 
     @property
     def cwe_ids(self) -> list[str]:
-        self._completeIfNotSet(self._cwe_ids)
         return self._cwe_ids.value
 
     @property
     def state(self) -> str:
-        self._completeIfNotSet(self._state)
         return self._state.value
 
     @property
     def vulnerabilities(self) -> list[AdvisoryVulnerability]:
-        self._completeIfNotSet(self._vulnerabilities)
         return self._vulnerabilities.value
 
     def add_vulnerability(
