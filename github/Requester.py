@@ -540,9 +540,11 @@ class Requester:
     def withLazy(self, lazy: bool) -> "Requester":
         """
         Create a new requester instance with identical configuration but the given lazy setting.
-        :param lazy: completable objects created from this instance are lazy,
-                     as well as completable objects created from those, and so on
+
+        :param lazy: completable objects created from this instance are lazy, as well as completable objects created
+            from those, and so on
         :return: new Requester instance
+
         """
         kwargs = self.kwargs
         kwargs.update(lazy=lazy)
