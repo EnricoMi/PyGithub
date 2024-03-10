@@ -167,9 +167,11 @@ class GithubIntegration:
     def withLazy(self, lazy: bool) -> GithubIntegration:
         """
         Create a GithubIntegration instance with identical configuration but the given lazy setting.
-        :param lazy: completable objects created from this instance are lazy,
-                     as well as completable objects created from those, and so on
+
+        :param lazy: completable objects created from this instance are lazy, as well as completable objects created
+            from those, and so on
         :return: new Github instance
+
         """
         kwargs = self.__requester.kwargs
         kwargs.update(lazy=lazy)

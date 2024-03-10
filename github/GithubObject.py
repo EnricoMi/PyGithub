@@ -50,7 +50,6 @@
 from __future__ import annotations
 
 import email.utils
-
 import typing
 from abc import ABC
 from datetime import datetime, timezone
@@ -403,9 +402,8 @@ class CompletableGithubObject(GithubObject, ABC):
         accept: str | None = None,
     ):
         """
-        A CompletableGithubObject can be partially initialised (completed=False).
-        Accessing attributes that are not initialized will then trigger a request
-        to complete all attributes.
+        A CompletableGithubObject can be partially initialised (completed=False). Accessing attributes that are not
+        initialized will then trigger a request to complete all attributes.
 
         A partially initialized CompletableGithubObject (completed=False) can be completed
         via complete(). This requires the url to be given via parameter `url` or `attributes`.
@@ -421,6 +419,7 @@ class CompletableGithubObject(GithubObject, ABC):
         :param completed: do not update non-initialized attributes when True
         :param url: url of this instance, overrides attributes['url']
         :param accept: use this accept header when completing this instance
+
         """
         response_given = headers is not None or attributes is not None
 
