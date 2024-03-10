@@ -40,8 +40,8 @@ from . import Framework
 class PullRequest1169(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        ferada_repo = self.g.withLazy(lazy=True).get_repo("coleslaw-org/coleslaw")
-        self.pull = ferada_repo.get_pull(173).complete()
+        ferada_repo = self.g.get_repo("coleslaw-org/coleslaw", lazy=True)
+        self.pull = ferada_repo.get_pull(173)
 
     def testReviewApproveWithoutBody(self):
         r = self.pull.create_review(event="APPROVE")

@@ -44,8 +44,7 @@ class CommitCombinedStatus(Framework.TestCase):
     def setUp(self):
         super().setUp()
         self.combined_status = (
-            self.g.withLazy(lazy=True)
-            .get_repo("edx/edx-platform")
+            self.g.get_repo("edx/edx-platform", lazy=True)
             .get_commit("74e70119a23fa3ffb3db19d4590eccfebd72b659")
             .get_combined_status()
         )

@@ -64,12 +64,11 @@ class RequiredPullRequestReviews(Framework.TestCase):
         )
 
     def testOrganizationOwnedTeam(self):
-        with self.assertWarns(DeprecationWarning):
-            required_pull_request_reviews = (
-                self.g.get_repo("PyGithub/PyGithub", lazy=True)
-                .get_branch("integrations")
-                .get_required_pull_request_reviews()
-            )
+        required_pull_request_reviews = (
+            self.g.get_repo("PyGithub/PyGithub", lazy=True)
+            .get_branch("integrations")
+            .get_required_pull_request_reviews()
+        )
         self.assertListKeyEqual(
             required_pull_request_reviews.dismissal_users,
             lambda u: u.login,

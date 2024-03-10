@@ -444,24 +444,17 @@ class Github:
         # There is no native "/enterprises/{enterprise}" api, so this function is a hub for apis that start with "/enterprise/{enterprise}".
         return github.Enterprise.Enterprise(self.__requester, enterprise)
 
-    # v3: remove lazy argument
-    def get_repo(self, full_name_or_id: int | str, lazy: Opt[bool] = NotSet) -> Repository:
+    def get_repo(self, full_name_or_id: int | str, lazy: bool = False) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <https://docs.github.com/en/rest/reference/repos>`_ or `GET /repositories/{id} <https://docs.github.com/en/rest/reference/repos>`_
         """
         assert isinstance(full_name_or_id, (str, int)), full_name_or_id
         url_base = "/repositories/" if isinstance(full_name_or_id, int) else "/repos/"
-
-        completed = None
-        if is_defined(lazy):
-            warnings.warn(
-                "Argument lazy is deprecated, please use github.Github(lazy).get_repo instead",
-                category=DeprecationWarning,
-            )
-            # complete has to be None if lazy is False but False if lazy is True
-            completed = False if lazy else None
-
-        return github.Repository.Repository(self.__requester, url=f"{url_base}{full_name_or_id}", completed=completed)
+        url = f"{url_base}{full_name_or_id}"
+        if lazy:
+            return github.Repository.Repository(self.__requester, {}, {"url": url}, completed=False)
+        headers, data = self.__requester.requestJsonAndCheck("GET", url)
+        return github.Repository.Repository(self.__requester, headers, data, completed=True)
 
     def get_repos(
         self,
