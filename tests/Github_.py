@@ -323,28 +323,6 @@ class Github(Framework.TestCase):
             "Python library implementing the full Github API v3",
         )
 
-    def testGetRepoLazy(self):
-        with self.assertWarns(DeprecationWarning) as warning:
-            self.assertEqual(
-                self.g.get_repo("jacquev6/PyGithub", lazy=True).description,
-                "Python library implementing the full Github API v3",
-            )
-        self.assertWarning(
-            warning,
-            "Argument lazy is deprecated, please use github.Github(lazy).get_repo instead",
-        )
-
-    def testGetRepoNotLazy(self):
-        with self.assertWarns(DeprecationWarning) as warning:
-            self.assertEqual(
-                self.g.get_repo("jacquev6/PyGithub", lazy=False).description,
-                "Python library implementing the full Github API v3",
-            )
-        self.assertWarning(
-            warning,
-            "Argument lazy is deprecated, please use github.Github(lazy).get_repo instead",
-        )
-
     def testGetGitignoreTemplates(self):
         self.assertEqual(
             self.g.get_gitignore_templates(),
