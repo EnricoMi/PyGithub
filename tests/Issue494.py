@@ -39,8 +39,8 @@ from . import Framework
 class Issue494(Framework.TestCase):
     def setUp(self):
         super().setUp()
-        self.repo = self.g.get_repo("apache/brooklyn-server", lazy=True)
-        self.pull = self.repo.get_pull(465)
+        self.repo = self.g.withLazy(lazy=True).get_repo("apache/brooklyn-server")
+        self.pull = self.repo.get_pull(465).complete()
 
     def testRepr(self):
         expected = (

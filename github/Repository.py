@@ -2053,8 +2053,7 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CommitComment.CommitComment`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/comments/{id}")
-        return github.CommitComment.CommitComment(self._requester, headers, data, completed=True)
+        return github.CommitComment.CommitComment(self._requester, url=f"{self.url}/comments/{id}")
 
     def get_comments(self) -> PaginatedList[CommitComment]:
         """
@@ -2076,8 +2075,10 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/commits/{sha}")
-        return github.Commit.Commit(self._requester, headers, data, completed=True)
+        return github.Commit.Commit(
+            self._requester,
+            url=f"{self.url}/commits/{sha}",
+        )
 
     def get_commits(
         self,
@@ -2200,12 +2201,11 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Deployment.Deployment`
         """
         assert isinstance(id_, int), id_
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"{self.url}/deployments/{id_}",
-            headers={"Accept": Consts.deploymentEnhancementsPreview},
+        return github.Deployment.Deployment(
+            self._requester,
+            url=f"{self.url}/deployments/{id_}",
+            accept=Consts.deploymentEnhancementsPreview,
         )
-        return github.Deployment.Deployment(self._requester, headers, data, completed=True)
 
     def create_deployment(
         self,
@@ -2572,8 +2572,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Download.Download`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/downloads/{id}")
-        return github.Download.Download(self._requester, headers, data, completed=True)
+        return github.Download.Download(
+            self._requester,
+            url=f"{self.url}/downloads/{id}",
+        )
 
     def get_downloads(self) -> PaginatedList[Download]:
         """
@@ -2637,8 +2639,10 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/git/blobs/{sha}")
-        return github.GitBlob.GitBlob(self._requester, headers, data, completed=True)
+        return github.GitBlob.GitBlob(
+            self._requester,
+            url=f"{self.url}/git/blobs/{sha}",
+        )
 
     def get_git_commit(self, sha: str) -> GitCommit:
         """
@@ -2648,8 +2652,10 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/git/commits/{sha}")
-        return github.GitCommit.GitCommit(self._requester, headers, data, completed=True)
+        return github.GitCommit.GitCommit(
+            self._requester,
+            url=f"{self.url}/git/commits/{sha}",
+        )
 
     def get_git_ref(self, ref: str) -> GitRef:
         """
@@ -2662,8 +2668,10 @@ class Repository(CompletableGithubObject):
             prefix = "/git/"
         assert isinstance(ref, str), ref
         ref = urllib.parse.quote(ref)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}{prefix}{ref}")
-        return github.GitRef.GitRef(self._requester, headers, data, completed=True)
+        return github.GitRef.GitRef(
+            self._requester,
+            url=f"{self.url}{prefix}{ref}",
+        )
 
     def get_git_refs(self) -> PaginatedList[GitRef]:
         """
@@ -2694,8 +2702,10 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(sha, str), sha
         sha = urllib.parse.quote(sha)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/git/tags/{sha}")
-        return github.GitTag.GitTag(self._requester, headers, data, completed=True)
+        return github.GitTag.GitTag(
+            self._requester,
+            url=f"{self.url}/git/tags/{sha}",
+        )
 
     def get_git_tree(self, sha: str, recursive: Opt[bool] = NotSet) -> GitTree:
         """
@@ -2723,8 +2733,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Hook.Hook`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/hooks/{id}")
-        return github.Hook.Hook(self._requester, headers, data, completed=True)
+        return github.Hook.Hook(
+            self._requester,
+            url=f"{self.url}/hooks/{id}",
+        )
 
     def get_hooks(self) -> PaginatedList[Hook]:
         """
@@ -2769,8 +2781,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Issue.Issue`
         """
         assert isinstance(number, int), number
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/issues/{number}")
-        return github.Issue.Issue(self._requester, headers, data, completed=True)
+        return github.Issue.Issue(
+            self._requester,
+            url=f"{self.url}/issues/{number}",
+        )
 
     def get_issues(
         self,
@@ -2875,12 +2889,11 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.IssueEvent.IssueEvent`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"{self.url}/issues/events/{id}",
-            headers={"Accept": Consts.mediaTypeLockReasonPreview},
+        return github.IssueEvent.IssueEvent(
+            self._requester,
+            url=f"{self.url}/issues/events/{id}",
+            accept=Consts.mediaTypeLockReasonPreview,
         )
-        return github.IssueEvent.IssueEvent(self._requester, headers, data, completed=True)
 
     def get_issues_events(self) -> PaginatedList[IssueEvent]:
         """
@@ -2902,8 +2915,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.RepositoryKey.RepositoryKey`
         """
         assert isinstance(id, int), id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/keys/{id}")
-        return github.RepositoryKey.RepositoryKey(self._requester, headers, data, completed=True)
+        return github.RepositoryKey.RepositoryKey(
+            self._requester,
+            url=f"{self.url}/keys/{id}",
+        )
 
     def get_keys(self) -> PaginatedList[RepositoryKey]:
         """
@@ -2924,8 +2939,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Label.Label`
         """
         assert isinstance(name, str), name
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/labels/{urllib.parse.quote(name)}")
-        return github.Label.Label(self._requester, headers, data, completed=True)
+        return github.Label.Label(
+            self._requester,
+            url=f"{self.url}/labels/{urllib.parse.quote(name)}",
+        )
 
     def get_labels(self) -> PaginatedList[Label]:
         """
@@ -2947,9 +2964,7 @@ class Repository(CompletableGithubObject):
         :calls: `GET /repos/{owner}/{repo}/license <https://docs.github.com/en/rest/reference/licenses>`_
         :rtype: :class:`github.ContentFile.ContentFile`
         """
-
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/license")
-        return github.ContentFile.ContentFile(self._requester, headers, data, completed=True)
+        return github.ContentFile.ContentFile(self._requester, url=f"{self.url}/license")
 
     def get_milestone(self, number: int) -> Milestone:
         """
@@ -2958,8 +2973,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.Milestone.Milestone`
         """
         assert isinstance(number, int), number
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/milestones/{number}")
-        return github.Milestone.Milestone(self._requester, headers, data, completed=True)
+        return github.Milestone.Milestone(
+            self._requester,
+            url=f"{self.url}/milestones/{number}",
+        )
 
     def get_milestones(
         self,
@@ -3018,8 +3035,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.PullRequest.PullRequest`
         """
         assert isinstance(number, int), number
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/pulls/{number}")
-        return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
+        return github.PullRequest.PullRequest(
+            self._requester,
+            url=f"{self.url}/pulls/{number}",
+        )
 
     def get_pulls(
         self,
@@ -3269,20 +3288,21 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(id, (int, str)), id
         if isinstance(id, int):
-            headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/{id}")
-            return github.GitRelease.GitRelease(self._requester, headers, data, completed=True)
-        elif isinstance(id, str):
+            url = f"{self.url}/releases/{id}"
+        else:
             id = urllib.parse.quote(id)
-            headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/tags/{id}")
-            return github.GitRelease.GitRelease(self._requester, headers, data, completed=True)
+            url = f"{self.url}/releases/tags/{id}"
+        return github.GitRelease.GitRelease(
+            self._requester,
+            url=url,
+        )
 
     def get_latest_release(self) -> GitRelease:
         """
         :calls: `GET /repos/{owner}/{repo}/releases/latest <https://docs.github.com/en/rest/reference/repos#get-the-latest-release>`_
         :rtype: :class:`github.GitRelease.GitRelease`
         """
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/latest")
-        return github.GitRelease.GitRelease(self._requester, headers, data, completed=True)
+        return github.GitRelease.GitRelease(self._requester, url=f"{self.url}/releases/latest")
 
     def get_teams(self) -> PaginatedList[Team]:
         """
@@ -3331,8 +3351,10 @@ class Repository(CompletableGithubObject):
         """
         assert isinstance(id_or_file_name, (int, str)), id_or_file_name
         id_or_file_name = urllib.parse.quote(str(id_or_file_name))
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/workflows/{id_or_file_name}")
-        return github.Workflow.Workflow(self._requester, headers, data, completed=True)
+        return github.Workflow.Workflow(
+            self._requester,
+            url=f"{self.url}/actions/workflows/{id_or_file_name}",
+        )
 
     def get_workflow_runs(
         self,
@@ -3396,8 +3418,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.WorkflowRun.WorkflowRun`
         """
         assert isinstance(id_, int)
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/actions/runs/{id_}")
-        return github.WorkflowRun.WorkflowRun(self._requester, headers, data, completed=True)
+        return github.WorkflowRun.WorkflowRun(
+            self._requester,
+            url=f"{self.url}/actions/runs/{id_}",
+        )
 
     def has_in_assignees(self, assignee: str | NamedUser) -> bool:
         """
@@ -3697,13 +3721,11 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CheckSuite.CheckSuite`
         """
         assert isinstance(check_suite_id, int), check_suite_id
-        requestHeaders = {"Accept": "application/vnd.github.v3+json"}
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            f"{self.url}/check-suites/{check_suite_id}",
-            headers=requestHeaders,
+        return github.CheckSuite.CheckSuite(
+            self._requester,
+            url=f"{self.url}/check-suites/{check_suite_id}",
+            accept="application/vnd.github.v3+json",
         )
-        return github.CheckSuite.CheckSuite(self._requester, headers, data)
 
     def update_check_suites_preferences(
         self, auto_trigger_checks: list[dict[str, bool | int]]
@@ -3743,8 +3765,10 @@ class Repository(CompletableGithubObject):
 
     def get_release_asset(self, id: int) -> GitReleaseAsset:
         assert isinstance(id, (int)), id
-        resp_headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/releases/assets/{id}")
-        return github.GitReleaseAsset.GitReleaseAsset(self._requester, resp_headers, data, completed=True)
+        return github.GitReleaseAsset.GitReleaseAsset(
+            self._requester,
+            url=f"{self.url}/releases/assets/{id}",
+        )
 
     def create_check_run(
         self,
@@ -3816,8 +3840,10 @@ class Repository(CompletableGithubObject):
         :rtype: :class:`github.CheckRun.CheckRun`
         """
         assert isinstance(check_run_id, int), check_run_id
-        headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/check-runs/{check_run_id}")
-        return github.CheckRun.CheckRun(self._requester, headers, data, completed=True)
+        return github.CheckRun.CheckRun(
+            self._requester,
+            url=f"{self.url}/check-runs/{check_run_id}",
+        )
 
     def get_artifacts(self, name: Opt[str] = NotSet) -> PaginatedList[Artifact]:
         """
