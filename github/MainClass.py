@@ -115,7 +115,7 @@ import github.NamedUser
 import github.Topic
 from github import Consts
 from github.GithubIntegration import GithubIntegration
-from github.GithubObject import GithubObject, NotSet, Opt, is_defined
+from github.GithubObject import CompletableGithubObject, GithubObject, NotSet, Opt, is_defined
 from github.GithubRetry import GithubRetry
 from github.HookDelivery import HookDelivery, HookDeliverySummary
 from github.HookDescription import HookDescription
@@ -179,6 +179,8 @@ class Github:
         seconds_between_requests: float | None = Consts.DEFAULT_SECONDS_BETWEEN_REQUESTS,
         seconds_between_writes: float | None = Consts.DEFAULT_SECONDS_BETWEEN_WRITES,
         auth: github.Auth.Auth | None = None,
+        # v3: set lazy = True as the default
+        lazy: bool = False,
     ) -> None:
         """
         :param login_or_token: string deprecated, use auth=github.Auth.Login(...) or auth=github.Auth.Token(...) instead
@@ -197,6 +199,8 @@ class Github:
         :param seconds_between_requests: float
         :param seconds_between_writes: float
         :param auth: authentication method
+        :param lazy: completable objects created from this instance are lazy,
+                     as well as completable objects created from those, and so on
         """
 
         assert login_or_token is None or isinstance(login_or_token, str), login_or_token
@@ -212,6 +216,7 @@ class Github:
         assert seconds_between_requests is None or seconds_between_requests >= 0
         assert seconds_between_writes is None or seconds_between_writes >= 0
         assert auth is None or isinstance(auth, github.Auth.Auth), auth
+        assert isinstance(lazy, bool), lazy
 
         if password is not None:
             warnings.warn(
@@ -252,7 +257,21 @@ class Github:
             pool_size,
             seconds_between_requests,
             seconds_between_writes,
+            lazy,
         )
+
+    def withLazy(self, lazy: bool) -> Github:
+        """
+        Create a Github instance with identical configuration but the given lazy setting.
+
+        :param lazy: completable objects created from this instance are lazy, as well as completable objects created
+            from those, and so on
+        :return: new Github instance
+
+        """
+        kwargs = self.__requester.kwargs
+        kwargs.update(lazy=lazy)
+        return Github(**kwargs)
 
     def close(self) -> None:
         """Close connections to the server. Alternatively, use the Github
@@ -319,7 +338,7 @@ class Github:
 
         """
         headers, data = self.__requester.requestJsonAndCheck("GET", "/rate_limit")
-        return RateLimit(self.__requester, headers, data["resources"], True)
+        return RateLimit(self.__requester, headers, data["resources"])
 
     @property
     def oauth_scopes(self) -> list[str] | None:
@@ -359,12 +378,17 @@ class Github:
         :calls: `GET /users/{user} <https://docs.github.com/en/rest/reference/users>`_ or `GET /user <https://docs.github.com/en/rest/reference/users>`_
         """
         if login is NotSet:
-            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, {}, {"url": "/user"}, completed=False)
+            url = "/user"
+            # always return a lazy completable AuthenticatedUser
+            # v3: given github.Github(lazy=True) is now default, remove completed=False here
+            return github.AuthenticatedUser.AuthenticatedUser(self.__requester, url=url, completed=False)
         else:
             assert isinstance(login, str), login
             login = urllib.parse.quote(login)
-            headers, data = self.__requester.requestJsonAndCheck("GET", f"/users/{login}")
-            return github.NamedUser.NamedUser(self.__requester, headers, data, completed=True)
+            url = f"/users/{login}"
+            # always return a completed NamedUser
+            # v3: remove complete() here and make this as lazy as github.Github is
+            return github.NamedUser.NamedUser(self.__requester, url=url).complete()
 
     def get_user_by_id(self, user_id: int) -> NamedUser:
         """
@@ -420,17 +444,24 @@ class Github:
         # There is no native "/enterprises/{enterprise}" api, so this function is a hub for apis that start with "/enterprise/{enterprise}".
         return github.Enterprise.Enterprise(self.__requester, enterprise)
 
-    def get_repo(self, full_name_or_id: int | str, lazy: bool = False) -> Repository:
+    # v3: remove lazy argument
+    def get_repo(self, full_name_or_id: int | str, lazy: Opt[bool] = NotSet) -> Repository:
         """
         :calls: `GET /repos/{owner}/{repo} <https://docs.github.com/en/rest/reference/repos>`_ or `GET /repositories/{id} <https://docs.github.com/en/rest/reference/repos>`_
         """
         assert isinstance(full_name_or_id, (str, int)), full_name_or_id
         url_base = "/repositories/" if isinstance(full_name_or_id, int) else "/repos/"
-        url = f"{url_base}{full_name_or_id}"
-        if lazy:
-            return github.Repository.Repository(self.__requester, {}, {"url": url}, completed=False)
-        headers, data = self.__requester.requestJsonAndCheck("GET", url)
-        return github.Repository.Repository(self.__requester, headers, data, completed=True)
+
+        completed = None
+        if is_defined(lazy):
+            warnings.warn(
+                "Argument lazy is deprecated, please use github.Github(lazy).get_repo instead",
+                category=DeprecationWarning,
+            )
+            # complete has to be None if lazy is False but False if lazy is True
+            completed = False if lazy else None
+
+        return github.Repository.Repository(self.__requester, url=f"{url_base}{full_name_or_id}", completed=completed)
 
     def get_repos(
         self,
@@ -505,7 +536,7 @@ class Github:
         assert isinstance(ghsa_id, str), ghsa_id
         ghsa_id = urllib.parse.quote(ghsa_id)
         headers, data = self.__requester.requestJsonAndCheck("GET", f"/advisories/{ghsa_id}")
-        return github.GlobalAdvisory.GlobalAdvisory(self.__requester, headers, data, completed=True)
+        return github.GlobalAdvisory.GlobalAdvisory(self.__requester, headers, data)
 
     def get_global_advisories(
         self,
@@ -866,7 +897,7 @@ class Github:
         assert isinstance(name, str), name
         name = urllib.parse.quote(name)
         headers, attributes = self.__requester.requestJsonAndCheck("GET", f"/hooks/{name}")
-        return HookDescription(self.__requester, headers, attributes, completed=True)
+        return HookDescription(self.__requester, headers, attributes)
 
     def get_hooks(self) -> list[HookDescription]:
         """
@@ -874,7 +905,7 @@ class Github:
         :rtype: list of :class:`github.HookDescription.HookDescription`
         """
         headers, data = self.__requester.requestJsonAndCheck("GET", "/hooks")
-        return [HookDescription(self.__requester, headers, attributes, completed=True) for attributes in data]
+        return [HookDescription(self.__requester, headers, attributes) for attributes in data]
 
     def get_hook_delivery(self, hook_id: int, delivery_id: int) -> HookDelivery:
         """
@@ -886,7 +917,7 @@ class Github:
         assert isinstance(hook_id, int), hook_id
         assert isinstance(delivery_id, int), delivery_id
         headers, attributes = self.__requester.requestJsonAndCheck("GET", f"/hooks/{hook_id}/deliveries/{delivery_id}")
-        return HookDelivery(self.__requester, headers, attributes, completed=True)
+        return HookDelivery(self.__requester, headers, attributes)
 
     def get_hook_deliveries(self, hook_id: int) -> list[HookDeliverySummary]:
         """
@@ -896,7 +927,7 @@ class Github:
         """
         assert isinstance(hook_id, int), hook_id
         headers, data = self.__requester.requestJsonAndCheck("GET", f"/hooks/{hook_id}/deliveries")
-        return [HookDeliverySummary(self.__requester, headers, attributes, completed=True) for attributes in data]
+        return [HookDeliverySummary(self.__requester, headers, attributes) for attributes in data]
 
     def get_gitignore_templates(self) -> list[str]:
         """
@@ -912,7 +943,7 @@ class Github:
         assert isinstance(name, str), name
         name = urllib.parse.quote(name)
         headers, attributes = self.__requester.requestJsonAndCheck("GET", f"/gitignore/templates/{name}")
-        return github.GitignoreTemplate.GitignoreTemplate(self.__requester, headers, attributes, completed=True)
+        return github.GitignoreTemplate.GitignoreTemplate(self.__requester, headers, attributes)
 
     def get_emojis(self) -> dict[str, str]:
         """
@@ -938,7 +969,9 @@ class Github:
         if headers is None:
             headers = {}
 
-        return klass(self.__requester, headers, raw_data, completed=True)
+        if issubclass(klass, CompletableGithubObject):
+            return klass(self.__requester, headers, raw_data, completed=True)  # type: ignore
+        return klass(self.__requester, headers, raw_data)
 
     def dump(self, obj: GithubObject, file: BinaryIO, protocol: int = 0) -> None:
         """
@@ -989,7 +1022,6 @@ class Github:
             self.__requester,
             headers={},
             attributes={"client_id": client_id, "client_secret": client_secret},
-            completed=False,
         )
 
     def get_app(self, slug: Opt[str] = NotSet) -> GithubApp:
