@@ -3290,7 +3290,6 @@ class Repository(CompletableGithubObject):
         :rtype: None or :class:`github.GitRelease.GitRelease`
         """
         assert isinstance(id, (int, str)), id
-        assert is_optional(lazy, bool), lazy
         if isinstance(id, int):
             url = f"{self.url}/releases/{id}"
         else:
