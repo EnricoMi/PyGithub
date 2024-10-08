@@ -96,6 +96,8 @@ import github
 
 from . import Framework
 
+ghr = Framework.github.Repository
+
 
 class Repository(Framework.TestCase):
     def setUp(self):
@@ -172,6 +174,11 @@ class Repository(Framework.TestCase):
         self.assertEqual(self.repo.merge_commit_message, "PR_BODY")
         self.assertTrue(self.repo.web_commit_signoff_required)
         self.assertEqual(self.repo.custom_properties, {"foo": "bar"})
+
+    def testUrlTemplate(self):
+        attributes = {"owner": {"login": "the-user"}, "name": "the-repo"}
+        repo = ghr.Repository(mock.MagicMock(), attributes=attributes, completed=False)
+        self.assertEqual(repo.url, "/repos/the-user/the-repo")
 
     def testEditWithoutArguments(self):
         self.repo.edit("PyGithub")

@@ -1046,9 +1046,13 @@ class Repository(CompletableGithubObject):
         return self._updated_at.value
 
     @property
-    def url(self) -> str:
-        self._completeIfNotSet(self._url)
-        return self._url.value
+    def url_template(self) -> str:
+        return "/repos/{owner}/{repo}"
+
+    @property
+    def url_template_attributes(self) -> dict[str, Attribute[Any]]:
+        owner = self._owner.value._login if is_defined(self._owner) and is_defined(self._owner.value._login) else NotSet
+        return {"owner": owner, "repo": self._name}
 
     @property
     def use_squash_pr_title_as_default(self) -> bool:
@@ -4137,6 +4141,7 @@ class Repository(CompletableGithubObject):
         self._requester.requestJsonAndCheck("PATCH", url, input=patch_parameters)
 
     def _initAttributes(self) -> None:
+        super()._initAttributes()
         self._allow_auto_merge: Attribute[bool] = NotSet
         self._allow_forking: Attribute[bool] = NotSet
         self._allow_merge_commit: Attribute[bool] = NotSet
@@ -4228,7 +4233,6 @@ class Repository(CompletableGithubObject):
         self._topics: Attribute[list[str]] = NotSet
         self._trees_url: Attribute[str] = NotSet
         self._updated_at: Attribute[datetime] = NotSet
-        self._url: Attribute[str] = NotSet
         self._use_squash_pr_title_as_default: Attribute[bool] = NotSet
         self._visibility: Attribute[str] = NotSet
         self._watchers: Attribute[int] = NotSet
@@ -4236,6 +4240,7 @@ class Repository(CompletableGithubObject):
         self._web_commit_signoff_required: Attribute[bool] = NotSet
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        super(Repository, self)._useAttributes(attributes)
         if "allow_auto_merge" in attributes:  # pragma no branch
             self._allow_auto_merge = self._makeBoolAttribute(attributes["allow_auto_merge"])
         if "allow_forking" in attributes:  # pragma no branch
@@ -4420,8 +4425,6 @@ class Repository(CompletableGithubObject):
             self._topics = self._makeListOfStringsAttribute(attributes["topics"])
         if "updated_at" in attributes:  # pragma no branch
             self._updated_at = self._makeDatetimeAttribute(attributes["updated_at"])
-        if "url" in attributes:  # pragma no branch
-            self._url = self._makeStringAttribute(attributes["url"])
         if "use_squash_pr_title_as_default" in attributes:  # pragma no branch
             self._use_squash_pr_title_as_default = self._makeBoolAttribute(attributes["use_squash_pr_title_as_default"])
         if "visibility" in attributes:  # pragma no branch

@@ -58,10 +58,10 @@ class License(CompletableGithubObject):
     """
 
     def _initAttributes(self) -> None:
+        super(License, self)._initAttributes()
         self._key: Attribute[str] = NotSet
         self._name: Attribute[str] = NotSet
         self._spdx_id: Attribute[str] = NotSet
-        self._url: Attribute[str] = NotSet
         self._html_url: Attribute[str] = NotSet
         self._description: Attribute[str] = NotSet
         self._implementation: Attribute[str] = NotSet
@@ -89,9 +89,12 @@ class License(CompletableGithubObject):
         return self._spdx_id.value
 
     @property
-    def url(self) -> str:
-        self._completeIfNotSet(self._url)
-        return self._url.value
+    def url_template(self) -> str | None:
+        return "/licenses/{key}"
+
+    @property
+    def url_template_attributes(self) -> dict[str, Attribute[str]]:
+        return {"key": self._key}
 
     @property
     def html_url(self) -> str:
@@ -129,14 +132,13 @@ class License(CompletableGithubObject):
         return self._limitations.value
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        super(License, self)._useAttributes(attributes)
         if "key" in attributes:  # pragma no branch
             self._key = self._makeStringAttribute(attributes["key"])
         if "name" in attributes:  # pragma no branch
             self._name = self._makeStringAttribute(attributes["name"])
         if "spdx_id" in attributes:  # pragma no branch
             self._spdx_id = self._makeStringAttribute(attributes["spdx_id"])
-        if "url" in attributes:  # pragma no branch
-            self._url = self._makeStringAttribute(attributes["url"])
         if "html_url" in attributes:  # pragma no branch
             self._html_url = self._makeStringAttribute(attributes["html_url"])
         if "description" in attributes:  # pragma no branch

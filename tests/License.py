@@ -26,7 +26,11 @@
 #                                                                              #
 ################################################################################
 
+from unittest import mock
+
 from . import Framework
+
+ghl = Framework.github.License
 
 
 class License(Framework.TestCase):
@@ -59,3 +63,8 @@ class License(Framework.TestCase):
             """Create a text file (typically named LICENSE or LICENSE.txt) in the root of your source code and copy the text of the license into the file. Replace [year] with the current year and [fullname] with the name (or names) of the copyright holders.""",
         )
         self.assertEqual(repr(self.license), 'License(name="MIT License")')
+
+    def testUrlTemplate(self):
+        attributes = {"key": "mit"}
+        repo = ghl.License(mock.MagicMock(), attributes=attributes, completed=False)
+        self.assertEqual(repo.url, "/licenses/mit")
