@@ -64,9 +64,9 @@ class Deployment(CompletableGithubObject):
     """
 
     def _initAttributes(self) -> None:
+        super(Deployment, self)._initAttributes()
         self._id: Attribute[int] = NotSet
         self._ref: Attribute[str] = NotSet
-        self._url: Attribute[str] = NotSet
         self._sha: Attribute[str] = NotSet
         self._task: Attribute[str] = NotSet
         self._payload: Attribute[dict[str, Any]] = NotSet
@@ -95,9 +95,12 @@ class Deployment(CompletableGithubObject):
         return self._ref.value
 
     @property
-    def url(self) -> str:
-        self._completeIfNotSet(self._url)
-        return self._url.value
+    def url_template(self) -> str | None:
+        return "{repository_url}/deployments/{id}"
+
+    @property
+    def url_template_attributes(self) -> dict[str, Attribute[str]]:
+        return {"repository_url": self._repository_url, "id": self._id}
 
     @property
     def sha(self) -> str:
@@ -236,6 +239,7 @@ class Deployment(CompletableGithubObject):
         )
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        super(Deployment, self)._useAttributes(attributes)
         if "id" in attributes:  # pragma no branch
             self._id = self._makeIntAttribute(attributes["id"])
         if "production_environment" in attributes:  # pragma no branch
@@ -244,8 +248,6 @@ class Deployment(CompletableGithubObject):
             self._ref = self._makeStringAttribute(attributes["ref"])
         if "transient_environment" in attributes:  # pragma no branch
             self._transient_environment = self._makeBoolAttribute(attributes["transient_environment"])
-        if "url" in attributes:  # pragma no branch
-            self._url = self._makeStringAttribute(attributes["url"])
         if "sha" in attributes:  # pragma no branch
             self._sha = self._makeStringAttribute(attributes["sha"])
         if "task" in attributes:  # pragma no branch

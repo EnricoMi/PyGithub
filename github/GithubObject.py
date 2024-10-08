@@ -407,11 +407,14 @@ class CompletableGithubObject(GithubObject, ABC):
 
         A partially initialized CompletableGithubObject (completed=False) can be completed
         via complete(). This requires the url to be given via parameter `url` or `attributes`.
+        If url is not provided, it can be derived from the url_template attribute if all attributes
+        referenced by the template are initialized.
 
         With a requester where `Requester.is_lazy == True`, this CompletableGithubObjects is
-        partially initialized. This requires the url to be given via parameter `url` or `attributes`.
+        partially initialized. This requires the url or url template with all referenced attributes to be given.
+
         Any CompletableGithubObject created from this lazy object will be lazy itself if created with
-        parameter `url` or `attributes`.
+        url or url template with all referenced attributes.
 
         :param requester: requester
         :param headers: response headers
@@ -446,6 +449,40 @@ class CompletableGithubObject(GithubObject, ABC):
 
     def __ne__(self, other: Any) -> bool:
         return not self == other
+
+    @property
+    def url(self) -> str:
+        if is_undefined(self._url) or self._url.value is None:
+            if self.url_template:
+                if any(is_undefined(a) or a.value is None
+                       for a in self.url_template_attributes.values()):
+                    raise IncompletableObject(
+                        400, message="Cannot complete object as its URL is not known "
+                                     "and some attributes of the URL template are undefined: "
+                                     f"{self.url_template}")
+                attributes = {k: v.value for k, v in self.url_template_attributes.items()}
+                url = self.url_template.format(**attributes)
+                self._url = _ValuedAttribute(url)
+            else:
+                raise IncompletableObject(
+                    400, message="Cannot complete object as its URL is not known")
+
+        return self._url.value
+
+    @property
+    def url_template(self) -> str | None:
+        return None
+
+    @property
+    def url_template_attributes(self) -> dict[str, Attribute[str]]:
+        return {}
+
+    def _initAttributes(self) -> None:
+        self._url: Attribute[str] = NotSet
+
+    def _useAttributes(self, attributes: Any) -> None:
+        if "url" in attributes:  # pragma no branch
+            self._url = self._makeStringAttribute(attributes["url"])
 
     @property
     def completed(self) -> bool:

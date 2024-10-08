@@ -35,8 +35,11 @@
 ################################################################################
 
 from datetime import datetime, timezone
+from unittest import mock
 
 from . import Framework
+
+ghd = Framework.github.Deployment
 
 
 class Deployment(Framework.TestCase):
@@ -75,3 +78,8 @@ class Deployment(Framework.TestCase):
             repr(self.deployment),
             'Deployment(url="https://api.github.com/repos/jacquev6/PyGithub/deployments/263877258", id=263877258)',
         )
+
+    def testUrlTemplate(self):
+        attributes = {"repository_url": "https://api.github.com/repos/jacquev6/PyGithub", "id": 263877258}
+        repo = ghd.Deployment(mock.MagicMock(), attributes=attributes, completed=False)
+        self.assertEqual(repo.url, "https://api.github.com/repos/jacquev6/PyGithub/deployments/263877258")

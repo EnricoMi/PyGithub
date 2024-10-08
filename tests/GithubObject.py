@@ -23,8 +23,11 @@
 #                                                                              #
 ################################################################################
 
+from __future__ import annotations
+
 import unittest
 from datetime import datetime, timedelta, timezone
+from unittest import mock
 
 from . import Framework
 
@@ -125,3 +128,48 @@ class GithubObject(unittest.TestCase):
             self.assertEqual(value, e.exception.actual_value)
             self.assertEqual(int, e.exception.expected_type)
             self.assertIsNone(e.exception.transformation_exception)
+
+
+class CompletableTestObject(gho.CompletableGithubObject):
+    def __init__(self,
+                 url: str | None = None,
+                 url_template: str | None = None,
+                 url_template_attributes: dict[str, str | None] | None = None):
+        super(CompletableTestObject, self).__init__(mock.MagicMock(), completed=False, url=url)
+        self._url_template = url_template
+        self._url_template_attributes =\
+            {k: gho._ValuedAttribute(v) if v is not None else gho.NotSet
+             for k, v in url_template_attributes.items()} \
+            if url_template_attributes is not None else {}
+
+    @property
+    def url_template(self) -> str | None:
+        return self._url_template
+
+    @property
+    def url_template_attributes(self) -> dict[str, gho.Attribute[str]]:
+        return self._url_template_attributes
+
+
+class CompletableGithubObject(unittest.TestCase):
+    def testUrl(self):
+        cto = CompletableTestObject(url="/path/foo/bar")
+        self.assertEqual(cto.url, "/path/foo/bar")
+
+        attributes = dict(attr1="1", attr2=2)
+        cto = CompletableTestObject(url_template="/path/{attr1}/{attr2}", url_template_attributes=attributes)
+        self.assertEqual(cto.url, "/path/1/2")
+
+        attributes["attr2"] = None
+        cto = CompletableTestObject(url_template="/path/{attr1}/{attr2}", url_template_attributes=attributes)
+        with self.assertRaises(Framework.github.IncompletableObject) as e:
+            # access url attribute
+            url = cto.url
+        self.assertEqual(e.exception.args, (400, None, None, 'Cannot complete object as its URL is not known and some attributes of the '
+                                                             'URL template are undefined: /path/{attr1}/{attr2}'))
+
+        cto = CompletableTestObject()
+        with self.assertRaises(Framework.github.IncompletableObject) as e:
+            # access url attribute
+            url = cto.url
+        self.assertEqual(e.exception.args, (400, None, None, 'Cannot complete object as its URL is not known'))
