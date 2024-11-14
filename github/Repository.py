@@ -391,7 +391,6 @@ class Repository(CompletableGithubObject):
         self._open_issues_count: Attribute[int] = NotSet
         self._organization: Attribute[Organization] = NotSet
         self._owner: Attribute[NamedUser] = NotSet
-        self._parent: Attribute[Repository] = NotSet
         self._permissions: Attribute[Permissions] = NotSet
         self._private: Attribute[bool] = NotSet
         self._pulls_url: Attribute[str] = NotSet
@@ -958,14 +957,6 @@ class Repository(CompletableGithubObject):
         """
         self._completeIfNotSet(self._owner)
         return self._owner.value
-
-    @property
-    def parent(self) -> Repository:
-        """
-        :type: :class:`github.Repository.Repository`
-        """
-        self._completeIfNotSet(self._parent)
-        return self._parent.value
 
     @property
     def permissions(self) -> Permissions:
@@ -4448,8 +4439,6 @@ class Repository(CompletableGithubObject):
             self._organization = self._makeClassAttribute(github.Organization.Organization, attributes["organization"])
         if "owner" in attributes:  # pragma no branch
             self._owner = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["owner"])
-        if "parent" in attributes:  # pragma no branch
-            self._parent = self._makeClassAttribute(Repository, attributes["parent"])
         if "permissions" in attributes:  # pragma no branch
             self._permissions = self._makeClassAttribute(github.Permissions.Permissions, attributes["permissions"])
         if "private" in attributes:  # pragma no branch
