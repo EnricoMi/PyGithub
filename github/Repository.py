@@ -321,6 +321,14 @@ class Repository(CompletableGithubObject):
     The reference can be found here
     https://docs.github.com/en/rest/reference/repos
 
+    The OpenAPI schema can be found at
+    /components/schemas/repository
+    /components/schemas/simple-repository
+    /components/schemas/minimal-repository
+    /components/schemas/team-repository
+    /components/schemas/full-repository
+    /components/schemas/nullable-repository
+    /components/schemas/nullable-minimal-repository
     """
 
     def _initAttributes(self) -> None:
