@@ -89,6 +89,11 @@ class NamedUser(github.GithubObject.CompletableGithubObject):
     The reference can be found here
     https://docs.github.com/en/rest/reference/users#get-a-user
 
+    The OpenAPI schema can be found at
+    /components/schemas/simple-user
+    /components/schemas/private-user
+    /components/schemas/public-user
+    /components/schemas/nullable-simple-user
     """
 
     def _initAttributes(self) -> None:
