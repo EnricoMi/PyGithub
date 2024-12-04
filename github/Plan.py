@@ -44,6 +44,11 @@ from github.GithubObject import Attribute, NonCompletableGithubObject, NotSet
 class Plan(NonCompletableGithubObject):
     """
     This class represents Plans.
+
+    The OpenAPI schema can be found at
+    - /components/schemas/organization-full/properties/plan
+    - /components/schemas/team-organization/properties/plan
+
     """
 
     def _initAttributes(self) -> None:

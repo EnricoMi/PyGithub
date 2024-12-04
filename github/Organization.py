@@ -142,8 +142,12 @@ class Organization(CompletableGithubObject):
     https://docs.github.com/en/rest/reference/orgs
 
     The OpenAPI schema can be found at
+    - /components/schemas/actor
+    - /components/schemas/nullable-simple-user
+    - /components/schemas/team-organization
     /components/schemas/organization-full
     /components/schemas/organization-simple
+
     """
 
     def _initAttributes(self) -> None:

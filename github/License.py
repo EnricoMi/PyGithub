@@ -55,6 +55,12 @@ class License(CompletableGithubObject):
     The reference can be found here
     https://docs.github.com/en/rest/reference/licenses
 
+    The OpenAPI schema can be found at
+    - /components/schemas/license-simple
+    - /components/schemas/minimal-repository/properties/license
+    - /components/schemas/nullable-license-simple
+    - /components/schemas/nullable-minimal-repository/properties/license
+
     """
 
     def _initAttributes(self) -> None:
