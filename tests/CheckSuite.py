@@ -41,29 +41,28 @@ class CheckSuite(Framework.TestCase):
         self.commit = self.repo.get_commit("fd09d934bcce792176d6b79d6d0387e938b62b7a")
 
     def testAttributes(self):
-        cs = self.check_suite
-        self.assertEqual(cs.after, "fd09d934bcce792176d6b79d6d0387e938b62b7a")
-        self.assertEqual(cs.app.slug, "github-actions")
-        self.assertEqual(cs.before, "9ee0caba8648aa0b8b5fc68ebc37c3c1162aa283")
+        self.assertEqual(self.check_suite.after, "fd09d934bcce792176d6b79d6d0387e938b62b7a")
+        self.assertEqual(self.check_suite.app.slug, "github-actions")
+        self.assertEqual(self.check_suite.before, "9ee0caba8648aa0b8b5fc68ebc37c3c1162aa283")
         self.assertEqual(
-            cs.check_runs_url,
+            self.check_suite.check_runs_url,
             "https://api.github.com/repos/wrecker/PySample/check-suites/1004503837/check-runs",
         )
-        self.assertEqual(cs.conclusion, "success")
-        self.assertEqual(cs.created_at, datetime(2020, 8, 4, 5, 6, 54, tzinfo=timezone.utc))
-        self.assertEqual(cs.head_branch, "wrecker-patch-1")
-        self.assertEqual(cs.head_commit.sha, "fd09d934bcce792176d6b79d6d0387e938b62b7a")
-        self.assertEqual(cs.head_sha, "fd09d934bcce792176d6b79d6d0387e938b62b7a")
-        self.assertEqual(cs.id, self.check_suite_id)
-        self.assertEqual(cs.latest_check_runs_count, 2)
-        self.assertEqual(cs.id, self.check_suite_id)
-        self.assertEqual(len(cs.pull_requests), 1)
-        self.assertEqual(cs.pull_requests[0].id, 462527907)
-        self.assertEqual(cs.repository.url, "https://api.github.com/repos/wrecker/PySample")
-        self.assertEqual(cs.status, "completed")
-        self.assertEqual(cs.updated_at, datetime(2020, 8, 4, 5, 7, 40, tzinfo=timezone.utc))
+        self.assertEqual(self.check_suite.conclusion, "success")
+        self.assertEqual(self.check_suite.created_at, datetime(2020, 8, 4, 5, 6, 54, tzinfo=timezone.utc))
+        self.assertEqual(self.check_suite.head_branch, "wrecker-patch-1")
+        self.assertEqual(self.check_suite.head_commit.sha, "fd09d934bcce792176d6b79d6d0387e938b62b7a")
+        self.assertEqual(self.check_suite.head_sha, "fd09d934bcce792176d6b79d6d0387e938b62b7a")
+        self.assertEqual(self.check_suite.id, self.check_suite_id)
+        self.assertEqual(self.check_suite.latest_check_runs_count, 2)
+        self.assertEqual(self.check_suite.id, self.check_suite_id)
+        self.assertEqual(len(self.check_suite.pull_requests), 1)
+        self.assertEqual(self.check_suite.pull_requests[0].id, 462527907)
+        self.assertEqual(self.check_suite.repository.url, "https://api.github.com/repos/wrecker/PySample")
+        self.assertEqual(self.check_suite.status, "completed")
+        self.assertEqual(self.check_suite.updated_at, datetime(2020, 8, 4, 5, 7, 40, tzinfo=timezone.utc))
         self.assertEqual(
-            cs.url,
+            self.check_suite.url,
             "https://api.github.com/repos/wrecker/PySample/check-suites/1004503837",
         )
 
