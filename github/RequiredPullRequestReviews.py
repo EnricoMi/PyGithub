@@ -61,6 +61,9 @@ class RequiredPullRequestReviews(CompletableGithubObject):
     The reference can be found here
     https://docs.github.com/en/rest/reference/repos#get-pull-request-review-protection
 
+    The OpenAPI schema can be found at
+    - /components/schemas/protected-branch-pull-request-review
+
     """
 
     def _initAttributes(self) -> None:
