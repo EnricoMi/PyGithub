@@ -63,6 +63,7 @@ class RequiredPullRequestReviews(CompletableGithubObject):
 
     The OpenAPI schema can be found at
     - /components/schemas/protected-branch-pull-request-review
+    - /components/schemas/protected-branch/properties/required_pull_request_reviews
 
     """
 
