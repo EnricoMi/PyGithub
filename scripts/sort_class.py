@@ -150,32 +150,39 @@ class SortMethodsTransformer(cst.CSTTransformer):
         return updated_node
 
 
-def main(index_filename: str, class_name: str, dry_run: bool):
-    full_class_name = class_name
-    if "." not in class_name:
-        with open(index_filename) as r:
-            index = json.load(r)
-        cls = index.get("classes", {}).get(class_name)
-        full_class_name = f'{cls.get("package")}.{cls.get("module")}.{cls.get("name")}'
-    package, module, class_name = full_class_name.split(".", maxsplit=2)
-    filename = f"{package}/{module}.py"
+def main(index_filename: str, class_names: list[str] | None, dry_run: bool):
+    with open(index_filename) as r:
+        index = json.load(r)
+    classes = index.get("classes", {})
 
-    print(f"Sorting {full_class_name} ({filename})")
-    with open(filename) as r:
-        code = "".join(r.readlines())
+    if not class_names:
+        class_names = sorted([class_name for class_name in classes.keys()
+                              if not class_name.endswith("GithubObject")])
 
-    tree = cst.parse_module(code)
-    transformer = SortMethodsTransformer(class_name)
-    tree_updated = tree.visit(transformer)
+    for class_name in class_names:
+        full_class_name = class_name
+        if "." not in class_name:
+            cls = classes.get(class_name)
+            full_class_name = f'{cls.get("package")}.{cls.get("module")}.{cls.get("name")}'
+        package, module, class_name = full_class_name.split(".", maxsplit=2)
+        filename = f"{package}/{module}.py"
 
-    if dry_run:
-        diff = difflib.unified_diff(code.splitlines(1), tree_updated.code.splitlines(1))
-        print("Diff:")
-        print("".join(diff))
-    else:
-        if not tree_updated.deep_equals(tree):
-            with open(filename, "w") as w:
-                w.write(tree_updated.code)
+        print(f"Sorting {full_class_name} ({filename})")
+        with open(filename) as r:
+            code = "".join(r.readlines())
+
+        tree = cst.parse_module(code)
+        transformer = SortMethodsTransformer(class_name)
+        tree_updated = tree.visit(transformer)
+
+        if dry_run:
+            diff = difflib.unified_diff(code.splitlines(1), tree_updated.code.splitlines(1))
+            print("Diff:")
+            print("".join(diff))
+        else:
+            if not tree_updated.deep_equals(tree):
+                with open(filename, "w") as w:
+                    w.write(tree_updated.code)
 
 
 def parse_args():
@@ -184,7 +191,7 @@ def parse_args():
     )
     args_parser.add_argument("index_filename", help="Path of index file")
     args_parser.add_argument(
-        "class_name", help="GithubObject class to sort, e.g. HookDelivery or github.HookDelivery.HookDeliverySummary"
+        "class_name", nargs="*", help="GithubObject class to sort, e.g. HookDelivery or github.HookDelivery.HookDeliverySummary"
     )
     args_parser.add_argument(
         "--dry-run", default=False, action="store_true", help="show prospect changes and do not modify the file"
