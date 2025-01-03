@@ -128,7 +128,6 @@ class CodeScanAlert(NonCompletableGithubObject):
         )
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
-
         if "created_at" in attributes:  # pragma no branch
             self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
         if "dismissed_at" in attributes:  # pragma no branch
