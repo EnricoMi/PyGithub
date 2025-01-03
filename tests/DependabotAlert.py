@@ -61,6 +61,7 @@ class DependabotAlert(Framework.TestCase):
         self.assertEqual(alert.security_advisory.identifiers[0]["type"], "GHSA")
         self.assertEqual(alert.security_advisory.identifiers[1]["value"], "CVE-2024-22195")
         self.assertEqual(alert.security_advisory.identifiers[1]["type"], "CVE")
+        self.assertIsNone(alert.security_advisory.cvss_severities)
         self.assertEqual(
             alert.security_advisory.references[0]["url"],
             "https://github.com/pallets/jinja/security/advisories/GHSA-h5c8-rqwp-cp95",
