@@ -121,15 +121,16 @@ class GlobalAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             self.advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
             [
-                (("pip", "RestrictedPython"), None, [], "< 5.3"),
-                (("pip", "RestrictedPython"), None, [], ">= 6.0a1.dev0, < 6.1"),
-                (("pip", "restrictedpython"), None, [], ">= 0, < 5.3"),
+                ("5.3", ("pip", "RestrictedPython"), None, [], "< 5.3"),
+                ("6.1", ("pip", "RestrictedPython"), None, [], ">= 6.0a1.dev0, < 6.1"),
+                ("5.3", ("pip", "restrictedpython"), None, [], ">= 0, < 5.3"),
             ],
         )
         self.assertEqual(self.advisory.withdrawn_at, None)
@@ -214,11 +215,12 @@ class GlobalAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             self.advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
-            [(("npm", "critters"), None, [], ">= 0.0.17, <= 0.0.19")],
+            [("0.0.20", ("npm", "critters"), None, [], ">= 0.0.17, <= 0.0.19")],
         )
         self.assertEqual(self.advisory.withdrawn_at, None)

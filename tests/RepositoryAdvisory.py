@@ -86,12 +86,13 @@ class RepositoryAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             self.advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
-            [(("npm", "a-package"), "1.0.5", ["function-name"], ">= 1.0.2")],
+            [(None, ("npm", "a-package"), "1.0.5", ["function-name"], ">= 1.0.2")],
         )
         self.assertEqual(self.advisory.withdrawn_at, None)
 
@@ -200,12 +201,13 @@ class RepositoryAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
-            [(("npm", "b-package"), "4.0.5", ["function-name"], "<=4.0.4")],
+            [(None, ("npm", "b-package"), "4.0.5", ["function-name"], "<=4.0.4")],
         )
         self.assertListKeyEqual(
             advisory.cwe_ids,
@@ -251,12 +253,13 @@ class RepositoryAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
-            [(("npm", "c-package"), "4.0.7", ["function-name-a"], "<=4.0.6")],
+            [(None, ("npm", "c-package"), "4.0.7", ["function-name-a"], "<=4.0.6")],
         )
         self.assertListKeyEqual(
             advisory.cwe_ids,
@@ -302,12 +305,13 @@ class RepositoryAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
-            [(("npm", "b-package"), "4.0.5", ["function-name"], "<=4.0.4")],
+            [(None, ("npm", "b-package"), "4.0.5", ["function-name"], "<=4.0.4")],
         )
         self.assertListKeyEqual(
             advisory.cwe_ids,
@@ -331,12 +335,13 @@ class RepositoryAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
-            [(("maven", None), None, [], None)],
+            [(None, ("maven", None), None, [], None)],
         )
         advisory.add_vulnerability(
             ecosystem="npm",
@@ -348,13 +353,14 @@ class RepositoryAdvisory(Framework.TestCase):
         self.assertListKeyEqual(
             advisory.vulnerabilities,
             lambda e: (
+                e.first_patched_version,
                 (e.package.ecosystem, e.package.name),
                 e.patched_versions,
                 e.vulnerable_functions,
                 e.vulnerable_version_range,
             ),
             [
-                (("maven", None), None, [], None),
-                (("npm", "b-package"), "4.0.10", ["function-name-c"], "<=4.0.9"),
+                (None, ("maven", None), None, [], None),
+                (None, ("npm", "b-package"), "4.0.10", ["function-name-c"], "<=4.0.9"),
             ],
         )
