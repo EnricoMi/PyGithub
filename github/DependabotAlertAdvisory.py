@@ -48,8 +48,13 @@ class DependabotAlertAdvisory(github.AdvisoryBase.AdvisoryBase):
 
     def _initAttributes(self) -> None:
         super()._initAttributes()
+        self._cvss_severities: Attribute[dict[str, Any]] = NotSet
         self._references: Attribute[list[dict]] = NotSet
         self._vulnerabilities: Attribute[list[DependabotAlertVulnerability]] = NotSet
+
+    @property
+    def cvss_severities(self) -> dict[str, Any]:
+        return self._cvss_severities.value
 
     @property
     def references(self) -> list[dict]:
@@ -60,6 +65,8 @@ class DependabotAlertAdvisory(github.AdvisoryBase.AdvisoryBase):
         return self._vulnerabilities.value
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        if "cvss_severities" in attributes:  # pragma no branch
+            self._cvss_severities = self._makeDictAttribute(attributes["cvss_severities"])
         if "references" in attributes:
             self._references = self._makeListOfDictsAttribute(
                 attributes["references"],
