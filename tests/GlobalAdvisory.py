@@ -56,7 +56,7 @@ class GlobalAdvisory(Framework.TestCase):
         self.assertEqual(self.advisory.cvss.version, Decimal("3.1"))
         self.assertEqual(self.advisory.cvss.score, Decimal("8.4"))
         self.assertEqual(self.advisory.cvss.vector_string, "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:C/C:H/I:H/A:L")
-        self.assertEqual(self.advisory.cvss_severities, "dict[str, Any]")
+        self.assertIsNone(self.advisory.cvss_severities)
         self.assertListKeyEqual(
             self.advisory.cwes,
             lambda e: (e.cwe_id, e.name),
@@ -68,8 +68,8 @@ class GlobalAdvisory(Framework.TestCase):
             self.advisory.description,
             "### Impact\n\nRestrictedPython does not check access to stack frames...",
         )
-        self.assertEqual(self.advisory.documentation_url, "")
-        self.assertEqual(self.advisory.epss, "dict[str, Any]")
+        self.assertIsNone(self.advisory.documentation_url)
+        self.assertIsNone(self.advisory.epss)
         self.assertEqual(self.advisory.ghsa_id, "GHSA-wqc8-x2pr-7jqh")
         self.assertEqual(
             self.advisory.github_reviewed_at,
@@ -83,7 +83,7 @@ class GlobalAdvisory(Framework.TestCase):
             self.advisory.identifiers,
             [{"type": "GHSA", "value": "GHSA-wqc8-x2pr-7jqh"}, {"type": "CVE", "value": "CVE-2023-37271"}],
         )
-        self.assertEqual(self.advisory.message, "")
+        self.assertIsNone(self.advisory.message)
         self.assertEqual(self.advisory.nvd_published_at, None)
         self.assertEqual(
             self.advisory.published_at,
@@ -108,7 +108,7 @@ class GlobalAdvisory(Framework.TestCase):
             self.advisory.source_code_location,
             "https://github.com/zopefoundation/RestrictedPython",
         )
-        self.assertEqual(self.advisory.status, "")
+        self.assertIsNone(self.advisory.status)
         self.assertEqual(
             self.advisory.summary,
             "RestrictedPython vulnerable to arbitrary code execution via stack frame sandbox escape",
