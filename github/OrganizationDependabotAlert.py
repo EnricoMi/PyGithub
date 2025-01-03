@@ -45,7 +45,12 @@ class OrganizationDependabotAlert(DependabotAlert):
 
     def _initAttributes(self) -> None:
         super()._initAttributes()
+        self._auto_dismissed_at: Attribute[dict[str, Any]] = NotSet
         self._repository: Attribute[Repository] = NotSet
+
+    @property
+    def auto_dismissed_at(self) -> dict[str, Any]:
+        return self._auto_dismissed_at.value
 
     @property
     def repository(self) -> Repository:
@@ -53,5 +58,7 @@ class OrganizationDependabotAlert(DependabotAlert):
 
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
         super()._useAttributes(attributes)
+        if "auto_dismissed_at" in attributes:  # pragma no branch
+            self._auto_dismissed_at = self._makeDictAttribute(attributes["auto_dismissed_at"])
         if "repository" in attributes:
             self._repository = self._makeClassAttribute(Repository, attributes["repository"])
