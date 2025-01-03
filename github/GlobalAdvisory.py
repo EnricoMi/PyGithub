@@ -49,11 +49,16 @@ class GlobalAdvisory(AdvisoryBase):
 
     def _initAttributes(self) -> None:
         self._credits: Attribute[list[AdvisoryCreditDetailed]] = NotSet
+        self._cvss_severities: Attribute[dict[str, Any]] = NotSet
+        self._documentation_url: Attribute[str] = NotSet
+        self._epss: Attribute[dict[str, Any]] = NotSet
         self._github_reviewed_at: Attribute[datetime] = NotSet
+        self._message: Attribute[str] = NotSet
         self._nvd_published_at: Attribute[datetime] = NotSet
         self._references: Attribute[list[str]] = NotSet
         self._repository_advisory_url: Attribute[str] = NotSet
         self._source_code_location: Attribute[str] = NotSet
+        self._status: Attribute[str] = NotSet
         self._type: Attribute[str] = NotSet
         self._vulnerabilities: Attribute[list[AdvisoryVulnerability]] = NotSet
 
@@ -67,8 +72,24 @@ class GlobalAdvisory(AdvisoryBase):
         return self._credits.value
 
     @property
+    def cvss_severities(self) -> dict[str, Any]:
+        return self._cvss_severities.value
+
+    @property
+    def documentation_url(self) -> str:
+        return self._documentation_url.value
+
+    @property
+    def epss(self) -> dict[str, Any]:
+        return self._epss.value
+
+    @property
     def github_reviewed_at(self) -> datetime:
         return self._github_reviewed_at.value
+
+    @property
+    def message(self) -> str:
+        return self._message.value
 
     @property
     def nvd_published_at(self) -> datetime:
@@ -87,6 +108,10 @@ class GlobalAdvisory(AdvisoryBase):
         return self._source_code_location.value
 
     @property
+    def status(self) -> str:
+        return self._status.value
+
+    @property
     def type(self) -> str:
         return self._type.value
 
@@ -100,11 +125,19 @@ class GlobalAdvisory(AdvisoryBase):
                 AdvisoryCreditDetailed,
                 attributes["credits"],
             )
+        if "cvss_severities" in attributes:  # pragma no branch
+            self._cvss_severities = self._makeDictAttribute(attributes["cvss_severities"])
+        if "documentation_url" in attributes:  # pragma no branch
+            self._documentation_url = self._makeStringAttribute(attributes["documentation_url"])
+        if "epss" in attributes:  # pragma no branch
+            self._epss = self._makeDictAttribute(attributes["epss"])
         if "github_reviewed_at" in attributes:  # pragma no branch
             assert attributes["github_reviewed_at"] is None or isinstance(
                 attributes["github_reviewed_at"], str
             ), attributes["github_reviewed_at"]
             self._github_reviewed_at = self._makeDatetimeAttribute(attributes["github_reviewed_at"])
+        if "message" in attributes:  # pragma no branch
+            self._message = self._makeStringAttribute(attributes["message"])
         if "nvd_published_at" in attributes:  # pragma no branch
             assert attributes["nvd_published_at"] is None or isinstance(
                 attributes["nvd_published_at"], str
@@ -116,6 +149,8 @@ class GlobalAdvisory(AdvisoryBase):
             self._repository_advisory_url = self._makeStringAttribute(attributes["repository_advisory_url"])
         if "source_code_location" in attributes:  # pragma no branch
             self._source_code_location = self._makeStringAttribute(attributes["source_code_location"])
+        if "status" in attributes:  # pragma no branch
+            self._status = self._makeStringAttribute(attributes["status"])
         if "type" in attributes:  # pragma no branch
             self._type = self._makeStringAttribute(attributes["type"])
         if "vulnerabilities" in attributes:
