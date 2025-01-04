@@ -26,6 +26,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from black import datetime
+
 from github.DependabotAlert import DependabotAlert
 from github.GithubObject import Attribute, NotSet
 from github.Repository import Repository
@@ -45,11 +47,11 @@ class OrganizationDependabotAlert(DependabotAlert):
 
     def _initAttributes(self) -> None:
         super()._initAttributes()
-        self._auto_dismissed_at: Attribute[dict[str, Any]] = NotSet
+        self._auto_dismissed_at: Attribute[datetime] = NotSet
         self._repository: Attribute[Repository] = NotSet
 
     @property
-    def auto_dismissed_at(self) -> dict[str, Any]:
+    def auto_dismissed_at(self) -> datetime:
         return self._auto_dismissed_at.value
 
     @property
@@ -59,6 +61,6 @@ class OrganizationDependabotAlert(DependabotAlert):
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
         super()._useAttributes(attributes)
         if "auto_dismissed_at" in attributes:  # pragma no branch
-            self._auto_dismissed_at = self._makeDictAttribute(attributes["auto_dismissed_at"])
+            self._auto_dismissed_at = self._makeDatetimeAttribute(attributes["auto_dismissed_at"])
         if "repository" in attributes:
             self._repository = self._makeClassAttribute(Repository, attributes["repository"])

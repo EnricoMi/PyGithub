@@ -474,6 +474,7 @@ class Organization(Framework.TestCase):
         self.assertEqual(len(list(alerts)), 8)
         self.assertEqual(alert_list[0].number, 1)
         self.assertEqual(alert_list[0].repository.full_name, "BeaverSoftware/PyGithub")
+        self.assertEqual(alert_list[5].auto_dismissed_at, datetime(2024, 1, 21, 1, 29, 52, tzinfo=timezone.utc))
 
     def testGetDependabotAlertsWithAllArguments(self):
         alerts = self.org.get_dependabot_alerts(
