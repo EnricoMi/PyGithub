@@ -41,14 +41,14 @@ class ProjectColumn(Framework.TestCase):
     # See https://developer.github.com/v3/projects/columns/#get-a-project-column
     def testAttributes(self):
         col = self.col
-        self.assertEqual(col.cards_url, "")
-        self.assertEqual(col.created_at, datetime(2020, 1, 2, 12, 34, 56, tzinfo=timezone.utc))
+        self.assertEqual(col.cards_url, 'https://api.github.com/projects/columns/3138830/cards')
+        self.assertEqual(col.created_at, datetime(2018, 8, 1, 4, 7, 35, tzinfo=timezone.utc))
         self.assertEqual(col.id, 3138830)
-        self.assertEqual(col.name, "")
+        self.assertEqual(col.name, 'To Do')
         self.assertEqual(col.node_id, "MDEzOlByb2plY3RDb2x1bW4zMTM4ODMw")
         self.assertEqual(col.name, "To Do")
-        self.assertEqual(col.project_url, "")
-        self.assertEqual(col.updated_at, datetime(2020, 1, 2, 12, 34, 56, tzinfo=timezone.utc))
+        self.assertEqual(col.project_url, 'https://api.github.com/projects/1682941')
+        self.assertEqual(col.updated_at, datetime(2018, 8, 1, 4, 7, 35, tzinfo=timezone.utc))
         self.assertEqual(col.url, "https://api.github.com/projects/columns/3138830")
         self.assertEqual(col.project_url, "https://api.github.com/projects/1682941")
         self.assertEqual(col.cards_url, "https://api.github.com/projects/columns/3138830/cards")
