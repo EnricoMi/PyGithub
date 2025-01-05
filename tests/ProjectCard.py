@@ -21,6 +21,7 @@
 ################################################################################
 
 from __future__ import annotations
+from datetime import datetime, timezone
 
 import github
 
@@ -43,6 +44,18 @@ class ProjectCard(Framework.TestCase):
     # See https://developer.github.com/v3/projects/cards/#get-a-project-card
     def testAttributes(self):
         card = self.pull_card
+        self.assertEqual(card.archived, False)
+        self.assertEqual(card.column_name, "")
+        self.assertEqual(card.column_url, "")
+        self.assertEqual(card.content_url, "")
+        self.assertEqual(card.created_at, datetime(2020, 1, 2, 12, 34, 56, tzinfo=timezone.utc))
+        self.assertEqual(card.creator.login, "")
+        self.assertEqual(card.id, 0)
+        self.assertEqual(card.node_id, "")
+        self.assertEqual(card.note, "")
+        self.assertEqual(card.project_id, "")
+        self.assertEqual(card.project_url, "")
+        self.assertEqual(card.updated_at, datetime(2020, 1, 2, 12, 34, 56, tzinfo=timezone.utc))
         self.assertEqual(card.url, "https://api.github.com/projects/columns/cards/11780055")
         self.assertEqual(card.column_url, "https://api.github.com/projects/columns/3138831")
         self.assertEqual(card.content_url, "https://api.github.com/repos/bbi-yggy/PyGithub/issues/1")
