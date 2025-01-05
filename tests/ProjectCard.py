@@ -21,6 +21,7 @@
 ################################################################################
 
 from __future__ import annotations
+
 from datetime import datetime, timezone
 
 import github
@@ -45,27 +46,19 @@ class ProjectCard(Framework.TestCase):
     def testAttributes(self):
         card = self.pull_card
         self.assertEqual(card.archived, False)
-        self.assertEqual(card.column_name, "")
-        self.assertEqual(card.column_url, "")
-        self.assertEqual(card.content_url, "")
-        self.assertEqual(card.created_at, datetime(2020, 1, 2, 12, 34, 56, tzinfo=timezone.utc))
-        self.assertEqual(card.creator.login, "")
-        self.assertEqual(card.id, 0)
-        self.assertEqual(card.node_id, "")
-        self.assertEqual(card.note, "")
-        self.assertEqual(card.project_id, "")
-        self.assertEqual(card.project_url, "")
-        self.assertEqual(card.updated_at, datetime(2020, 1, 2, 12, 34, 56, tzinfo=timezone.utc))
-        self.assertEqual(card.url, "https://api.github.com/projects/columns/cards/11780055")
+        self.assertEqual(card.column_name, "In Progress")
         self.assertEqual(card.column_url, "https://api.github.com/projects/columns/3138831")
         self.assertEqual(card.content_url, "https://api.github.com/repos/bbi-yggy/PyGithub/issues/1")
+        self.assertEqual(card.created_at, datetime(2018, 8, 1, 4, 53, 59, tzinfo=timezone.utc))
+        self.assertEqual(card.creator.login, "bbi-yggy")
+        self.assertEqual(card.creator, self.repo.owner)
         self.assertEqual(card.id, 11780055)
         self.assertEqual(card.node_id, "MDExOlByb2plY3RDYXJkMTE3ODAwNTU=")
-        self.assertEqual(card.note, None)  # No notes for cards with content.
-        self.assertEqual(card.creator, self.repo.owner)
-        self.assertEqual(card.created_at.year, 2018)
-        self.assertTrue(card.updated_at >= card.created_at)
-        self.assertFalse(card.archived)
+        self.assertEqual(card.note, "Test note")
+        self.assertEqual(card.project_id, "1682941")
+        self.assertEqual(card.project_url, "https://api.github.com/projects/1682941")
+        self.assertEqual(card.updated_at, datetime(2018, 8, 1, 4, 54, 16, tzinfo=timezone.utc))
+        self.assertEqual(card.url, "https://api.github.com/projects/columns/cards/11780055")
         self.assertEqual(repr(card), "ProjectCard(id=11780055)")
 
     def testGetContent(self):
