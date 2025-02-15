@@ -511,6 +511,8 @@ class Repository(Framework.TestCase):
         self.assertEqual(release.tag_name, "vX.Y.Z-by-PyGithub-acctest-release-notes")
         self.assertEqual(release.draft, False)
         self.assertEqual(release.prerelease, False)
+        self.assertEqual(release.body, "This release is created by PyGithub")
+        self.assertEqual(release.name, "vX.Y.Z: PyGithub acctest-release-notes")
 
     def testCreateGitReleaseWithAllArguments(self):
         release = self.repo.create_git_release(

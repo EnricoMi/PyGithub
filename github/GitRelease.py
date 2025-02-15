@@ -406,6 +406,7 @@ class GitRelease(CompletableGithubObject):
         if "message" in attributes:  # pragma no branch
             self._message = self._makeStringAttribute(attributes["message"])
         if "name" in attributes:
+            self._name = self._makeStringAttribute(attributes["name"])
             self._title = self._makeStringAttribute(attributes["name"])
         if "node_id" in attributes:  # pragma no branch
             self._node_id = self._makeStringAttribute(attributes["node_id"])
