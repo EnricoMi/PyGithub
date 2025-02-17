@@ -23,6 +23,7 @@
 
 from __future__ import annotations
 
+from abc import ABC
 from typing import TYPE_CHECKING, Any
 
 import github.CopilotSeat
@@ -34,45 +35,56 @@ if TYPE_CHECKING:
     from github.Requester import Requester
 
 
-class Copilot(NonCompletableGithubObject):
-    def __init__(self, requester: Requester, org_name: str) -> None:
-        super().__init__(requester, {}, {"org_name": org_name})
+class Copilot(NonCompletableGithubObject, ABC):
+    """
+    This class represents Copilot.
+
+    Such objects do not exist in the Github API, so this class merely collects all endpoints the start with
+    /{copilot_base_url}/copilot. There are specific implementations for Organization, Team and Enterprise
+    for the different {copilot_base_url} urls.
+
+    See methods below for specific endpoints and docs.
+    https://docs.github.com/en/rest/copilot/copilot-metrics?apiVersion=2022-11-28
+    https://docs.github.com/en/rest/copilot/copilot-usage?apiVersion=2022-11-28
+    https://docs.github.com/en/rest/copilot/copilot-user-management?apiVersion=2022-11-28
+    https://docs.github.com/en/enterprise-cloud@latest/rest/enterprise-admin?apiVersion=2022-11-28
+    """
+
+    def __init__(self, requester: Requester, parent_url: str) -> None:
+        super().__init__(requester, {}, {"copilot_base_url": f"{parent_url}/copilot"})
 
     def _initAttributes(self) -> None:
-        self._org_name: Attribute[str] = NotSet
-
-    def _useAttributes(self, attributes: dict[str, Any]) -> None:
-        if "org_name" in attributes:  # pragma no branch
-            self._org_name = self._makeStringAttribute(attributes["org_name"])
+        self._copilot_base_url: Attribute[str] = NotSet
 
     def __repr__(self) -> str:
-        return self.get__repr__({"org_name": self._org_name.value if self._org_name is not NotSet else NotSet})
+        return self.get__repr__({"copilot_base_url": self._copilot_base_url.value})
 
     @property
-    def org_name(self) -> str:
-        return self._org_name.value
+    def copilot_base_url(self) -> str:
+        return self._copilot_base_url.value
 
     def get_seats(self) -> PaginatedList[CopilotSeat]:
         """
-        :calls: `GET /orgs/{org}/copilot/billing/seats <https://docs.github.com/en/rest/copilot/copilot-business>`_
+        :calls: `GET {copilot_base_url}/billing/seats <https://docs.github.com/en/rest/copilot/copilot-business>`_
         """
-        url = f"/orgs/{self._org_name.value}/copilot/billing/seats"
+        url = f"{self.copilot_base_url}/billing/seats"
         return PaginatedList(
             github.CopilotSeat.CopilotSeat,
             self._requester,
             url,
             None,
             list_item="seats",
+            total_count_item="total_seats"
         )
 
     def add_seats(self, selected_usernames: list[str]) -> int:
         """
-        :calls: `POST /orgs/{org}/copilot/billing/selected_users <https://docs.github.com/en/rest/copilot/copilot-business>`_
+        :calls: `POST {copilot_base_url}/billing/selected_users <https://docs.github.com/en/rest/copilot/copilot-business>`_
         :param selected_usernames: List of usernames to add Copilot seats for
         :rtype: int
         :return: Number of seats created
         """
-        url = f"/orgs/{self._org_name.value}/copilot/billing/selected_users"
+        url = f"{self.copilot_base_url}/billing/selected_users"
         _, data = self._requester.requestJsonAndCheck(
             "POST",
             url,
@@ -82,15 +94,19 @@ class Copilot(NonCompletableGithubObject):
 
     def remove_seats(self, selected_usernames: list[str]) -> int:
         """
-        :calls: `DELETE /orgs/{org}/copilot/billing/selected_users <https://docs.github.com/en/rest/copilot/copilot-business>`_
+        :calls: `DELETE {copilot_base_url}/billing/selected_users <https://docs.github.com/en/rest/copilot/copilot-business>`_
         :param selected_usernames: List of usernames to remove Copilot seats for
         :rtype: int
         :return: Number of seats cancelled
         """
-        url = f"/orgs/{self._org_name.value}/copilot/billing/selected_users"
+        url = f"{self.copilot_base_url}/billing/selected_users"
         _, data = self._requester.requestJsonAndCheck(
             "DELETE",
             url,
             input={"selected_usernames": selected_usernames},
         )
         return data["seats_cancelled"]
+
+    def _useAttributes(self, attributes: dict[str, Any]) -> None:
+        if "copilot_base_url" in attributes:  # pragma no branch
+            self._copilot_base_url = self._makeStringAttribute(attributes["copilot_base_url"])

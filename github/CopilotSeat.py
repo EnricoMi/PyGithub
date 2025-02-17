@@ -32,6 +32,15 @@ from github.GithubObject import Attribute, NonCompletableGithubObject, NotSet, _
 
 
 class CopilotSeat(NonCompletableGithubObject):
+    """
+    This class represents CopilotSeat.
+
+    The reference can be found here
+    https://docs.github.com/en/rest/reference/users#get-a-user
+
+    The OpenAPI schema can be found at
+    """
+
     def _initAttributes(self) -> None:
         self._created_at: Attribute[datetime] | _NotSetType = NotSet
         self._updated_at: Attribute[datetime] | _NotSetType = NotSet
