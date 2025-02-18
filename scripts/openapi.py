@@ -194,7 +194,10 @@ class CstMethods(abc.ABC):
             isinstance(attr, cst.Attribute) or isinstance(attr, cst.Subscript) and isinstance(attr.value, cst.Attribute)
         ):
             if isinstance(attr, cst.Attribute):
-                attrs.insert(0, attr.attr.value)
+                if isinstance(attr.attr, cst.Subscript):
+                    attrs.insert(0, attr.attr.value.value)
+                else:
+                    attrs.insert(0, attr.attr.value)
             elif isinstance(attr, cst.Subscript):
                 # we do not extract a name, we skip to the subscript value
                 pass
@@ -963,14 +966,61 @@ class ApplySchemaTestTransformer(ApplySchemaBaseTransformer):
         return node
 
     def leave_FunctionDef(self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef):
-        def create_statement(prop: Property, self_attribute: bool) -> cst.SimpleStatementLine:
+        def create_statement(prop: Property, self_attribute: bool) -> [cst.SimpleStatementLine]:
+            stmts = []
             # turn a list of GithubClasses into the first element of the list
+            # first assert the list is not None and has at least one element
             if (
                 isinstance(prop.data_type, PythonType)
                 and prop.data_type.type == "list"
                 and isinstance(prop.data_type.inner_types[0], GithubClass)
                 and prop.data_type.inner_types[0].ids
             ):
+                stmts.append(
+                    cst.SimpleStatementLine(
+                        [
+                            cst.Expr(
+                                cst.Call(
+                                    func=self.create_attribute(["self", "assertIsNotNone"]),
+                                    args=[
+                                        cst.Arg(
+                                            self.create_attribute(
+                                                (["self"] if self_attribute else []) + [attribute, prop.name]
+                                            )
+                                        ),
+                                    ],
+                                )
+                            )
+                        ]
+                    )
+                )
+                stmts.append(
+                    cst.SimpleStatementLine(
+                        [
+                            cst.Expr(
+                                cst.Call(
+                                    func=self.create_attribute(["self", "assertGreaterEqual"]),
+                                    args=[
+                                        cst.Arg(
+                                            cst.Call(
+                                                func=cst.Name("len"),
+                                                args=[
+                                                    cst.Arg(
+                                                        self.create_attribute(
+                                                            (["self"] if self_attribute else [])
+                                                            + [attribute, prop.name]
+                                                        )
+                                                    )
+                                                ],
+                                            )
+                                        ),
+                                        cst.Arg(cst.Integer("1")),
+                                    ],
+                                )
+                            )
+                        ]
+                    )
+                )
                 prop = dataclasses.replace(prop, name=f"{prop.name}[0]", data_type=prop.data_type.inner_types[0])
 
             if (
@@ -997,39 +1047,47 @@ class ApplySchemaTestTransformer(ApplySchemaBaseTransformer):
 
                 if ids:
                     id = ids[0]
-                    return cst.SimpleStatementLine(
-                        [
-                            cst.Expr(
-                                cst.Call(
-                                    func=self.create_attribute(["self", "assertEqual"]),
-                                    args=[
-                                        cst.Arg(
-                                            self.create_attribute(
-                                                (["self"] if self_attribute else []) + [attribute, prop.name, id]
-                                            )
-                                        ),
-                                        cst.Arg(cst.SimpleString('""')),
-                                    ],
+                    stmts.append(
+                        cst.SimpleStatementLine(
+                            [
+                                cst.Expr(
+                                    cst.Call(
+                                        func=self.create_attribute(["self", "assertEqual"]),
+                                        args=[
+                                            cst.Arg(
+                                                self.create_attribute(
+                                                    (["self"] if self_attribute else []) + [attribute, prop.name, id]
+                                                )
+                                            ),
+                                            cst.Arg(cst.SimpleString('""')),
+                                        ],
+                                    )
                                 )
-                            )
-                        ]
-                    )
-
-            return cst.SimpleStatementLine(
-                [
-                    cst.Expr(
-                        cst.Call(
-                            func=self.create_attribute(["self", "assertEqual"]),
-                            args=[
-                                cst.Arg(
-                                    self.create_attribute((["self"] if self_attribute else []) + [attribute, prop.name])
-                                ),
-                                cst.Arg(self.get_value(prop.data_type)),
-                            ],
+                            ]
                         )
                     )
-                ]
+                    return stmts
+
+            stmts.append(
+                cst.SimpleStatementLine(
+                    [
+                        cst.Expr(
+                            cst.Call(
+                                func=self.create_attribute(["self", "assertEqual"]),
+                                args=[
+                                    cst.Arg(
+                                        self.create_attribute(
+                                            (["self"] if self_attribute else []) + [attribute, prop.name]
+                                        )
+                                    ),
+                                    cst.Arg(self.get_value(prop.data_type)),
+                                ],
+                            )
+                        )
+                    ]
+                )
             )
+            return stmts
 
         if updated_node.name.value == "testAttributes":
             # first we detect the attribute that is used to test this class
@@ -1092,10 +1150,12 @@ class ApplySchemaTestTransformer(ApplySchemaBaseTransformer):
                     asserted_property = attrs[1]
                     while self.properties and self.properties[0].name < asserted_property:
                         prop = self.properties.pop(0)
-                        stmt = create_statement(prop, self_attribute)
-                        stmts = updated_node.body.body
+                        new_stmts = create_statement(prop, self_attribute)
+                        old_stmts = updated_node.body.body
                         updated_node = updated_node.with_changes(
-                            body=updated_node.body.with_changes(body=tuple(stmts[:i]) + (stmt,) + tuple(stmts[i:]))
+                            body=updated_node.body.with_changes(
+                                body=tuple(old_stmts[:i]) + tuple(new_stmts) + tuple(old_stmts[i:])
+                            )
                         )
                         i = i + 1
                     if self.properties and self.properties[0].name == asserted_property:
@@ -1103,10 +1163,10 @@ class ApplySchemaTestTransformer(ApplySchemaBaseTransformer):
                 i = i + 1
             while self.properties:
                 prop = self.properties.pop(0)
-                stmt = create_statement(prop, self_attribute)
-                stmts = updated_node.body.body
+                new_stmts = create_statement(prop, self_attribute)
+                old_stmts = updated_node.body.body
                 updated_node = updated_node.with_changes(
-                    body=updated_node.body.with_changes(body=tuple(stmts) + (stmt,))
+                    body=updated_node.body.with_changes(body=tuple(old_stmts) + tuple(new_stmts))
                 )
         return updated_node
 
