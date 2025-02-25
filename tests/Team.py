@@ -67,6 +67,7 @@ class Team(Framework.TestCase):
         self.assertEqual(self.team.created_at, datetime(2024, 6, 18, 10, 27, 23, tzinfo=timezone.utc))
         self.assertEqual(self.team.description, "a team")
         self.assertIsNone(self.team.group_id)
+        self.assertIsNone(self.team.group_name)
         self.assertEqual(self.team.html_url, "https://github.com/orgs/BeaverSoftware/teams/team-slug")
         self.assertEqual(self.team.id, 12345678)
         self.assertIsNone(self.team.ldap_dn)

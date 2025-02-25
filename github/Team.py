@@ -109,6 +109,7 @@ class Team(CompletableGithubObject):
         self._created_at: Attribute[datetime] = NotSet
         self._description: Attribute[str] = NotSet
         self._group_id: Attribute[int] = NotSet
+        self._group_name: Attribute[str] = NotSet
         self._html_url: Attribute[str] = NotSet
         self._id: Attribute[int] = NotSet
         self._ldap_dn: Attribute[str] = NotSet
@@ -150,6 +151,11 @@ class Team(CompletableGithubObject):
     def group_id(self) -> int:
         self._completeIfNotSet(self._group_id)
         return self._group_id.value
+
+    @property
+    def group_name(self) -> str:
+        self._completeIfNotSet(self._group_name)
+        return self._group_name.value
 
     @property
     def html_url(self) -> str:
@@ -498,6 +504,8 @@ class Team(CompletableGithubObject):
             self._description = self._makeStringAttribute(attributes["description"])
         if "group_id" in attributes:  # pragma no branch
             self._group_id = self._makeIntAttribute(attributes["group_id"])
+        if "group_name" in attributes:  # pragma no branch
+            self._group_name = self._makeStringAttribute(attributes["group_name"])
         if "html_url" in attributes:
             self._html_url = self._makeStringAttribute(attributes["html_url"])
         if "id" in attributes:  # pragma no branch
