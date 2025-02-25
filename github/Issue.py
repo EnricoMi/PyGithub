@@ -147,6 +147,7 @@ class Issue(CompletableGithubObject):
         self._repository_url: Attribute[str] = NotSet
         self._state: Attribute[str] = NotSet
         self._state_reason: Attribute[str | None] = NotSet
+        self._sub_issues_summary: Attribute[dict[str, Any]] = NotSet
         self._text_matches: Attribute[dict[str, Any]] = NotSet
         self._timeline_url: Attribute[str] = NotSet
         self._title: Attribute[str] = NotSet
@@ -311,6 +312,11 @@ class Issue(CompletableGithubObject):
     def state_reason(self) -> str | None:
         self._completeIfNotSet(self._state_reason)
         return self._state_reason.value
+
+    @property
+    def sub_issues_summary(self) -> dict[str, Any]:
+        self._completeIfNotSet(self._sub_issues_summary)
+        return self._sub_issues_summary.value
 
     @property
     def text_matches(self) -> dict[str, Any]:
@@ -651,6 +657,8 @@ class Issue(CompletableGithubObject):
             self._state = self._makeStringAttribute(attributes["state"])
         if "state_reason" in attributes:  # pragma no branch
             self._state_reason = self._makeStringAttribute(attributes["state_reason"])
+        if "sub_issues_summary" in attributes:  # pragma no branch
+            self._sub_issues_summary = self._makeDictAttribute(attributes["sub_issues_summary"])
         if "text_matches" in attributes:  # pragma no branch
             self._text_matches = self._makeDictAttribute(attributes["text_matches"])
         if "timeline_url" in attributes:  # pragma no branch

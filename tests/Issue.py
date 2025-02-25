@@ -102,6 +102,7 @@ class Issue(Framework.TestCase):
         self.assertEqual(self.issue.repository_url, "https://api.github.com/repos/PyGithub/PyGithub")
         self.assertEqual(self.issue.state, "closed")
         self.assertEqual(self.issue.state_reason, "completed")
+        self.assertIsNone(self.issue.sub_issues_summary)
         self.assertIsNone(self.issue.text_matches)
         self.assertEqual(self.issue.timeline_url, "https://api.github.com/repos/PyGithub/PyGithub/issues/28/timeline")
         self.assertEqual(self.issue.title, "Issue created by PyGithub")
