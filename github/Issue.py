@@ -344,14 +344,14 @@ class Issue(CompletableGithubObject):
 
     def as_pull_request(self) -> PullRequest:
         """
-        :calls: `GET /repos/{owner}/{repo}/pulls/{number} <https://docs.github.com/en/rest/reference/pulls>`_
+        :calls: `GET /repos/{owner}/{repo}/pulls/{pull_number} <https://docs.github.com/en/rest/reference/pulls>`_
         """
         headers, data = self._requester.requestJsonAndCheck("GET", "/pulls/".join(self.url.rsplit("/issues/", 1)))
         return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
 
     def add_to_assignees(self, *assignees: NamedUser | str) -> None:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{number}/assignees <https://docs.github.com/en/rest/reference/issues#assignees>`_
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/assignees <https://docs.github.com/en/rest/reference/issues#assignees>`_
         """
         assert all(isinstance(element, (github.NamedUser.NamedUser, str)) for element in assignees), assignees
         post_parameters = {
@@ -365,7 +365,7 @@ class Issue(CompletableGithubObject):
 
     def add_to_labels(self, *labels: Label | str) -> None:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
         """
         assert all(isinstance(element, (github.Label.Label, str)) for element in labels), labels
         post_parameters = [label.name if isinstance(label, github.Label.Label) else label for label in labels]
@@ -373,7 +373,7 @@ class Issue(CompletableGithubObject):
 
     def create_comment(self, body: str) -> IssueComment:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{number}/comments <https://docs.github.com/en/rest/reference/issues#comments>`_
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/comments <https://docs.github.com/en/rest/reference/issues#comments>`_
         """
         assert isinstance(body, str), body
         post_parameters = {
@@ -384,7 +384,7 @@ class Issue(CompletableGithubObject):
 
     def delete_labels(self) -> None:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
         """
         headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/labels")
 
@@ -400,7 +400,7 @@ class Issue(CompletableGithubObject):
         state_reason: Opt[str] = NotSet,
     ) -> None:
         """
-        :calls: `PATCH /repos/{owner}/{repo}/issues/{number} <https://docs.github.com/en/rest/reference/issues>`_
+        :calls: `PATCH /repos/{owner}/{repo}/issues/{issue_number} <https://docs.github.com/en/rest/reference/issues>`_
         :param assignee: deprecated, use `assignees` instead. `assignee=None` means to remove current assignee.
         :param milestone: `milestone=None` means to remove current milestone.
         """
@@ -458,7 +458,7 @@ class Issue(CompletableGithubObject):
 
     def get_comment(self, id: int) -> IssueComment:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/comments/{id} <https://docs.github.com/en/rest/reference/issues#comments>`_
+        :calls: `GET /repos/{owner}/{repo}/issues/comments/{comment_id} <https://docs.github.com/en/rest/reference/issues#comments>`_
         """
         assert isinstance(id, int), id
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self._parentUrl(self.url)}/comments/{id}")
@@ -466,7 +466,7 @@ class Issue(CompletableGithubObject):
 
     def get_comments(self, since: Opt[datetime] = NotSet) -> PaginatedList[IssueComment]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{number}/comments <https://docs.github.com/en/rest/reference/issues#comments>`_
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/comments <https://docs.github.com/en/rest/reference/issues#comments>`_
         """
         url_parameters = {}
         if is_defined(since):
@@ -494,13 +494,13 @@ class Issue(CompletableGithubObject):
 
     def get_labels(self) -> PaginatedList[Label]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
         """
         return PaginatedList(github.Label.Label, self._requester, f"{self.url}/labels", None)
 
     def remove_from_assignees(self, *assignees: NamedUser | str) -> None:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{number}/assignees <https://docs.github.com/en/rest/reference/issues#assignees>`_
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/assignees <https://docs.github.com/en/rest/reference/issues#assignees>`_
         """
         assert all(isinstance(element, (github.NamedUser.NamedUser, str)) for element in assignees), assignees
         post_parameters = {
@@ -514,7 +514,7 @@ class Issue(CompletableGithubObject):
 
     def remove_from_labels(self, label: Label | str) -> None:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{number}/labels/{name} <https://docs.github.com/en/rest/reference/issues#labels>`_
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name} <https://docs.github.com/en/rest/reference/issues#labels>`_
         """
         assert isinstance(label, (github.Label.Label, str)), label
         if isinstance(label, github.Label.Label):
@@ -525,7 +525,7 @@ class Issue(CompletableGithubObject):
 
     def set_labels(self, *labels: Label | str) -> None:
         """
-        :calls: `PUT /repos/{owner}/{repo}/issues/{number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        :calls: `PUT /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
         """
         assert all(isinstance(element, (github.Label.Label, str)) for element in labels), labels
         post_parameters = [label.name if isinstance(label, github.Label.Label) else label for label in labels]
@@ -533,7 +533,7 @@ class Issue(CompletableGithubObject):
 
     def get_reactions(self) -> PaginatedList[Reaction]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{number}/reactions <https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue>`_
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/reactions <https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue>`_
         """
         return PaginatedList(
             github.Reaction.Reaction,
@@ -545,7 +545,7 @@ class Issue(CompletableGithubObject):
 
     def create_reaction(self, reaction_type: str) -> Reaction:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{number}/reactions <https://docs.github.com/en/rest/reference/reactions>`_
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/reactions <https://docs.github.com/en/rest/reference/reactions>`_
         """
         assert isinstance(reaction_type, str), reaction_type
         post_parameters = {
@@ -573,7 +573,7 @@ class Issue(CompletableGithubObject):
 
     def get_timeline(self) -> PaginatedList[TimelineEvent]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{number}/timeline <https://docs.github.com/en/rest/reference/issues#list-timeline-events-for-an-issue>`_
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/timeline <https://docs.github.com/en/rest/reference/issues#list-timeline-events-for-an-issue>`_
         """
         return PaginatedList(
             github.TimelineEvent.TimelineEvent,

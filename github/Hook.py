@@ -147,7 +147,7 @@ class Hook(CompletableGithubObject):
 
     def delete(self) -> None:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/hooks/{id} <https://docs.github.com/en/rest/reference/repos#webhooks>`_
+        :calls: `DELETE /repos/{owner}/{repo}/hooks/{hook_id} <https://docs.github.com/en/rest/reference/repos#webhooks>`_
         """
         headers, data = self._requester.requestJsonAndCheck("DELETE", self.url)
 
@@ -161,7 +161,7 @@ class Hook(CompletableGithubObject):
         active: Opt[bool] = NotSet,
     ) -> None:
         """
-        :calls: `PATCH /repos/{owner}/{repo}/hooks/{id} <https://docs.github.com/en/rest/reference/repos#webhooks>`_
+        :calls: `PATCH /repos/{owner}/{repo}/hooks/{hook_id} <https://docs.github.com/en/rest/reference/repos#webhooks>`_
         """
         assert isinstance(name, str), name
         assert isinstance(config, dict), config
@@ -185,13 +185,13 @@ class Hook(CompletableGithubObject):
 
     def test(self) -> None:
         """
-        :calls: `POST /repos/{owner}/{repo}/hooks/{id}/tests <https://docs.github.com/en/rest/reference/repos#webhooks>`_
+        :calls: `POST /repos/{owner}/{repo}/hooks/{hook_id}/tests <https://docs.github.com/en/rest/reference/repos#webhooks>`_
         """
         headers, data = self._requester.requestJsonAndCheck("POST", f"{self.url}/tests")
 
     def ping(self) -> None:
         """
-        :calls: `POST /repos/{owner}/{repo}/hooks/{id}/pings <https://docs.github.com/en/rest/reference/repos#webhooks>`_
+        :calls: `POST /repos/{owner}/{repo}/hooks/{hook_id}/pings <https://docs.github.com/en/rest/reference/repos#webhooks>`_
         """
         headers, data = self._requester.requestJsonAndCheck("POST", f"{self.url}/pings")
 

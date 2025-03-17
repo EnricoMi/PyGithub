@@ -128,7 +128,7 @@ class Notification(CompletableGithubObject):
 
     def mark_as_read(self) -> None:
         """
-        :calls: `PATCH /notifications/threads/{id} <https://docs.github.com/en/rest/reference/activity#notifications>`_
+        :calls: `PATCH /notifications/threads/{thread_id} <https://docs.github.com/en/rest/reference/activity#notifications>`_
         """
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH",
@@ -137,7 +137,7 @@ class Notification(CompletableGithubObject):
 
     def mark_as_done(self) -> None:
         """
-        :calls: `DELETE /notifications/threads/{id} <https://docs.github.com/en/rest/reference/activity#notifications>`_
+        :calls: `DELETE /notifications/threads/{thread_id} <https://docs.github.com/en/rest/reference/activity#notifications>`_
         """
         headers, data = self._requester.requestJsonAndCheck(
             "DELETE",
