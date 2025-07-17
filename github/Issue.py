@@ -698,6 +698,7 @@ class IssueSearchResult(Issue):
         super()._initAttributes()
         self._score: Attribute[float] = NotSet
         self._sub_issues_summary: Attribute[dict[str, Any]] = NotSet
+        self._type: Attribute[dict[str, Any]] = NotSet
 
     def __repr__(self) -> str:
         return self.get__repr__({"number": self._number.value, "title": self._title.value, "score": self._score.value})
@@ -712,6 +713,11 @@ class IssueSearchResult(Issue):
         self._completeIfNotSet(self._sub_issues_summary)
         return self._sub_issues_summary.value
 
+    @property
+    def type(self) -> dict[str, Any]:
+        self._completeIfNotSet(self._type)
+        return self._type.value
+
     def _useAttributes(self, attributes: dict[str, Any]) -> None:
         # TODO: remove if parent does not implement this
         super()._useAttributes(attributes)
@@ -719,3 +725,5 @@ class IssueSearchResult(Issue):
             self._score = self._makeFloatAttribute(attributes["score"])
         if "sub_issues_summary" in attributes:  # pragma no branch
             self._sub_issues_summary = self._makeDictAttribute(attributes["sub_issues_summary"])
+        if "type" in attributes:  # pragma no branch
+            self._type = self._makeDictAttribute(attributes["type"])
