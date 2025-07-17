@@ -119,6 +119,7 @@ class Team(CompletableGithubObject):
         self._node_id: Attribute[str] = NotSet
         self._notification_setting: Attribute[str] = NotSet
         self._organization: Attribute[Organization] = NotSet
+        self._organization_selection_type: Attribute[str] = NotSet
         self._parent: Attribute[github.Team.Team] = NotSet
         self._permission: Attribute[str] = NotSet
         self._permissions: Attribute[Permissions] = NotSet
@@ -201,6 +202,11 @@ class Team(CompletableGithubObject):
     def organization(self) -> Organization:
         self._completeIfNotSet(self._organization)
         return self._organization.value
+
+    @property
+    def organization_selection_type(self) -> str:
+        self._completeIfNotSet(self._organization_selection_type)
+        return self._organization_selection_type.value
 
     @property
     def parent(self) -> Team:
@@ -524,6 +530,8 @@ class Team(CompletableGithubObject):
             self._notification_setting = self._makeStringAttribute(attributes["notification_setting"])
         if "organization" in attributes:  # pragma no branch
             self._organization = self._makeClassAttribute(github.Organization.Organization, attributes["organization"])
+        if "organization_selection_type" in attributes:  # pragma no branch
+            self._organization_selection_type = self._makeStringAttribute(attributes["organization_selection_type"])
         if "parent" in attributes:  # pragma no branch
             self._parent = self._makeClassAttribute(github.Team.Team, attributes["parent"])
         if "permission" in attributes:  # pragma no branch

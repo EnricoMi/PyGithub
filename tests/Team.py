@@ -79,6 +79,7 @@ class Team(Framework.TestCase):
         self.assertEqual(self.team.node_id, "AbCdEfG")
         self.assertEqual(self.team.notification_setting, "notifications_disabled")
         self.assertEqual(self.team.organization.login, "BeaverSoftware")
+        self.assertIsNone(self.team.organization_selection_type)
         self.assertIsNone(self.team.parent)
         self.assertEqual(self.team.permission, "pull")
         self.assertIsNone(self.team.permissions)
