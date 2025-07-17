@@ -106,6 +106,7 @@ class Issue(Framework.TestCase):
         self.assertIsNone(self.issue.text_matches)
         self.assertEqual(self.issue.timeline_url, "https://api.github.com/repos/PyGithub/PyGithub/issues/28/timeline")
         self.assertEqual(self.issue.title, "Issue created by PyGithub")
+        self.assertIsNone(self.issue.type)
         self.assertEqual(self.issue.updated_at, datetime(2019, 5, 3, 9, 44, 22, tzinfo=timezone.utc))
         self.assertEqual(self.issue.url, "https://api.github.com/repos/PyGithub/PyGithub/issues/28")
         self.assertFalse(self.issue.locked)

@@ -151,6 +151,7 @@ class Issue(CompletableGithubObject):
         self._text_matches: Attribute[dict[str, Any]] = NotSet
         self._timeline_url: Attribute[str] = NotSet
         self._title: Attribute[str] = NotSet
+        self._type: Attribute[dict[str, Any]] = NotSet
         self._updated_at: Attribute[datetime] = NotSet
         self._url: Attribute[str] = NotSet
         self._user: Attribute[NamedUser] = NotSet
@@ -332,6 +333,11 @@ class Issue(CompletableGithubObject):
     def title(self) -> str:
         self._completeIfNotSet(self._title)
         return self._title.value
+
+    @property
+    def type(self) -> dict[str, Any]:
+        self._completeIfNotSet(self._type)
+        return self._type.value
 
     @property
     def updated_at(self) -> datetime:
@@ -665,6 +671,8 @@ class Issue(CompletableGithubObject):
             self._timeline_url = self._makeStringAttribute(attributes["timeline_url"])
         if "title" in attributes:  # pragma no branch
             self._title = self._makeStringAttribute(attributes["title"])
+        if "type" in attributes:  # pragma no branch
+            self._type = self._makeDictAttribute(attributes["type"])
         if "updated_at" in attributes:  # pragma no branch
             self._updated_at = self._makeDatetimeAttribute(attributes["updated_at"])
         if "url" in attributes:  # pragma no branch
