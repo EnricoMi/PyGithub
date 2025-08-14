@@ -67,6 +67,41 @@ jobs:
         run: false
         shell: bash
 
+  index:
+    name: "Check verbs"
+    needs: "test_success"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: head
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - name: Set up dependencies
+        run: |
+          pip install -r head/requirements/scripts.txt
+      - name: Check verbs
+        run: |
+          python head/scripts/openapi.py fetch ${{ env.openapi_api }} ${{ env.openapi_version }} openapi.json
+
+          echo "::group::Head verb checking:"
+          python head/scripts/openapi.py index --check-verbs head/github openapi.head.index | tee verbs.head.txt
+          echo "::endgroup::"
+
+          echo "::group::Base verb checking:"
+          python head/scripts/openapi.py index --check-verbs base/github openapi.base.index | tee verbs.base.txt
+          echo "::endgroup::"
+
+          echo "Difference:"
+          diff verbs.base.txt verbs.head.txt
+
   schemas:
     name: "Add schemas"
     needs: "test_success"
