@@ -124,20 +124,42 @@ jobs:
           pip install -r head/requirements/scripts.txt
       - name: Add schemas
         run: |
+          # Add schemas
           python head/scripts/openapi.py fetch ${{ env.openapi_api }} ${{ env.openapi_version }} openapi.json
 
           echo "::group::Head schema suggestions:"
           python head/scripts/openapi.py index head/github openapi.head.index
-          python head/scripts/openapi.py --dry-run suggest openapi.json openapi.head.index | tee schemas.head.txt
+          python head/scripts/openapi.py suggest openapi.json openapi.head.index | tee schemas.head.txt
           echo "::endgroup::"
 
           echo "::group::Base schema suggestions:"
           python head/scripts/openapi.py index base/github openapi.base.index
-          python head/scripts/openapi.py --dry-run suggest openapi.json openapi.base.index | tee schemas.base.txt
+          python head/scripts/openapi.py suggest openapi.json openapi.base.index | tee schemas.base.txt
           echo "::endgroup::"
 
-          echo "Difference:"
-          diff schemas.base.txt schemas.head.txt
+          if ! (diff schemas.base.txt schemas.head.txt > diff.txt)
+          then
+            echo
+            echo "Difference:"
+            cat diff.txt
+            echo
+            grep -E -e "^> Class \w+:$" diff.txt | sed -E -e "s/^> Class (\w+):$/\1/" | while read class
+            do
+              echo "::group::Add schema to $class:"
+              python head/scripts/openapi.py suggest --add openapi.json openapi.head.index "$class" > /dev/null
+              (cd head; git diff; git reset --hard --quiet HEAD)
+              echo "::endgroup::"
+            done
+            echo
+            echo "Run the following commands to add the suggested schemas:"
+            echo "python3 -m venv venv"
+            echo "source venv/bin/activate"
+            echo "pip install -r requirements/scripts.txt"
+            echo python scripts/openapi.py fetch api.github.com 2022-11-28 openapi.json
+            echo python scripts/openapi.py index github openapi.index
+            echo python scripts/openapi.py suggest --add openapi.json openapi.index $(grep -E -e "^> Class \w+:$" diff.txt | sed -E -e "s/^> Class (\w+):$/\1/")
+            false
+          fi
 
   implementations:
     name: "Implement schemas"
