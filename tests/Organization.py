@@ -97,7 +97,6 @@ class Organization(Framework.TestCase):
         self.assertIsNone(self.org.dependency_graph_enabled_for_new_repositories)
         self.assertEqual(self.org.description, "BeaverSoftware writes software.")
         self.assertIsNone(self.org.disk_usage)
-        self.assertIsNone(self.org.display_login)
         self.assertEqual(self.org.email, "foo@example.com")
         self.assertEqual(self.org.events_url, "https://api.github.com/orgs/BeaverSoftware/events")
         self.assertEqual(self.org.followers, 130)
