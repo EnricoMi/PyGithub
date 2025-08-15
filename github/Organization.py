@@ -180,7 +180,6 @@ class Organization(CompletableGithubObject):
         self._dependency_graph_enabled_for_new_repositories: Attribute[bool] = NotSet
         self._description: Attribute[str] = NotSet
         self._disk_usage: Attribute[int] = NotSet
-        self._display_login: Attribute[str] = NotSet
         self._email: Attribute[str] = NotSet
         self._events_url: Attribute[str] = NotSet
         self._followers: Attribute[int] = NotSet
@@ -298,11 +297,6 @@ class Organization(CompletableGithubObject):
     def disk_usage(self) -> int:
         self._completeIfNotSet(self._disk_usage)
         return self._disk_usage.value
-
-    @property
-    def display_login(self) -> str:
-        self._completeIfNotSet(self._display_login)
-        return self._display_login.value
 
     @property
     def email(self) -> str | None:
@@ -1915,8 +1909,6 @@ class Organization(CompletableGithubObject):
             self._description = self._makeStringAttribute(attributes["description"])
         if "disk_usage" in attributes:  # pragma no branch
             self._disk_usage = self._makeIntAttribute(attributes["disk_usage"])
-        if "display_login" in attributes:  # pragma no branch
-            self._display_login = self._makeStringAttribute(attributes["display_login"])
         if "email" in attributes:  # pragma no branch
             self._email = self._makeStringAttribute(attributes["email"])
         if "events_url" in attributes:  # pragma no branch
