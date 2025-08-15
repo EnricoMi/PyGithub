@@ -252,7 +252,7 @@ jobs:
           echo "::endgroup::"
 
           echo "Changes:"
-          git diff
+          git diff --exit-code
 
   event_file:
     name: "Event File"
