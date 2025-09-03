@@ -2358,16 +2358,18 @@ class IndexFileWorker:
             raise RuntimeError(f"Failed to parse {filename}", e)
 
 
-class HandleNewSchemas(Enum):
-    ignore = "ignore"
-    create_class = "create-class"
-    as_dict = "as-dict"
-
+class StringEnum(Enum):
     def __str__(self):
         return self.value
 
 
-class UpdateDocstringMode(Enum):
+class HandleNewSchemas(StringEnum):
+    ignore = "ignore"
+    create_class = "create-class"
+    as_dict = "as-dict"
+
+
+class UpdateDocstringMode(StringEnum):
     extend = "extend"
     rewrite = "rewrite"
 
