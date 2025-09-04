@@ -1,0 +1,7 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+  }Request Id: 53960ef4-a498-4551-ad30-96afd5bd7a00
+Correlation Id: 6e6cdf18-9a6b-40d5-b1d8-dc79eeb371fd
+Timestamp: 2024-03-14T21:57:57Z
+Message: AADSTS50020: User account 'suppressortp@aol.com' from identity provider 'live.com' does not exist in tenant 'Aylo' and cannot access the application 'https://mindgeek.zendesk.com'(Zendesk Mindgeek) in that tenant. The account needs to be added as an external user in the tenant first. Sign out and sign in again with a different Azure Active Directory user account.
