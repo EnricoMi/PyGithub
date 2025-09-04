@@ -3672,6 +3672,7 @@ class OpenApi:
         apply_methods_parser.add_argument(
             "--update-docstrings",
             type=UpdateDocstringMode,
+            default=UpdateDocstringMode.extend,
             help="How to update docstrings: only 'extend' existing docstrings, entirely 'rewrite' docstrings.",
             choices=list(UpdateDocstringMode),
         )
