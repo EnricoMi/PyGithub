@@ -399,6 +399,7 @@ class Property:
 @dataclasses.dataclass(frozen=True)
 class Parameter:
     name: str
+    python_name: str
     description: str | None
     data_type: PythonType | GithubClass | None
     param_type: str
@@ -426,7 +427,7 @@ class Parameter:
         deprecated = schema.get("deprecated")
         if deprecated is None and description and description.startswith("**Closing down notice**"):
             deprecated = True
-        return Parameter(name, description, data_type, param_type, required, deprecated)
+        return Parameter(name, name, description, data_type, param_type, required, deprecated)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -1836,6 +1837,8 @@ class UpdateMethodsTransformer(CstTransformerBase, abc.ABC):
             type = decorator["type"]
             type = string_as_python_type(type, self.classes)
             parameter = dataclasses.replace(parameter, data_type=type)
+        if "matches" in decorator:
+            parameter = dataclasses.replace(parameter, python_name=decorator["matches"])
         return parameter
 
     def leave_FunctionDef(self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef):
