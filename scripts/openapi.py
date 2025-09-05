@@ -1882,6 +1882,7 @@ class UpdateMethodsTransformer(CstTransformerBase, abc.ABC):
         param = param.with_changes(
             name=cst.Name(parameter.name),
             annotation=cls.create_annotation(parameter),
+            equal=cst.MaybeSentinel.DEFAULT if parameter.required else cst.AssignEqual(),
             default=cls.create_default(parameter),
         )
         return param
