@@ -261,6 +261,7 @@ from github.GithubObject import (
     is_optional,
     is_optional_list,
     is_undefined,
+    openapi_parameter,
 )
 from github.PaginatedList import PaginatedList
 
@@ -1304,6 +1305,7 @@ class Repository(CompletableGithubObject):
             github.Invitation.Invitation(self._requester, headers, data, completed=True) if data is not None else None
         )
 
+    @openapi_parameter("username", matches="collaborator", type="str | NamedUser", input=True)
     def get_collaborator_permission(self, collaborator: str | NamedUser) -> str:
         """
         :calls: `GET /repos/{owner}/{repo}/collaborators/{username}/permission <https://docs.github.com/en/rest/reference/repos#collaborators>`_
@@ -1321,6 +1323,7 @@ class Repository(CompletableGithubObject):
         )
         return data["permission"]
 
+    @openapi_parameter("username", matches="collaborator", type="str | NamedUser", input=True)
     def get_collaborator_role_name(self, collaborator: str | NamedUser) -> str:
         """
         :calls: `GET /repos/{owner}/{repo}/collaborators/{username}/permission <https://docs.github.com/en/rest/reference/repos#collaborators>`_
@@ -1350,6 +1353,7 @@ class Repository(CompletableGithubObject):
             None,
         )
 
+    @openapi_parameter("invitation_id", matches="invite_id", input=True)
     def remove_invitation(self, invite_id: int) -> None:
         """
         :calls: `DELETE /repos/{owner}/{repo}/invitations/{invitation_id} <https://docs.github.com/en/rest/reference/repos#invitations>`_
@@ -1415,6 +1419,8 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("POST", f"{self.url}/git/blobs", input=post_parameters)
         return github.GitBlob.GitBlob(self._requester, headers, data, completed=True)
 
+    @openapi_parameter("tree", type="GitTree")
+    @openapi_parameter("parents", type="list[GitTree]")
     def create_git_commit(
         self,
         message: str,
@@ -1509,6 +1515,8 @@ class Repository(CompletableGithubObject):
             make_latest=make_latest,
         )
 
+    @openapi_parameter("tag_name", matches="tag")
+    @openapi_parameter("body", matches="message")
     def create_git_release(
         self,
         tag: str,
@@ -2401,6 +2409,7 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/commits/{sha}")
         return github.Commit.Commit(self._requester, headers, data, completed=True)
 
+    @openapi_parameter("author", type="AuthenticatedUser | NamedUser | str")
     def get_commits(
         self,
         sha: Opt[str] = NotSet,
@@ -2408,7 +2417,7 @@ class Repository(CompletableGithubObject):
         since: Opt[datetime] = NotSet,
         until: Opt[datetime] = NotSet,
         author: Opt[AuthenticatedUser | NamedUser | str] = NotSet,
-    ) -> PaginatedList[Commit]:
+    ):
         """
         :calls: `GET /repos/{owner}/{repo}/commits <https://docs.github.com/en/rest/reference/repos#commits>`_
         :param sha: string
@@ -4513,6 +4522,7 @@ class Repository(CompletableGithubObject):
             return None
         return github.RepoCodeSecurityConfig.RepoCodeSecurityConfig(self._requester, headers, data)
 
+    @openapi_parameter("team_ids", matches="teams")
     def transfer_ownership(self, new_owner: str, new_name: Opt[str] = NotSet, teams: Opt[list[int]] = NotSet) -> bool:
         """
         :calls: `POST /repos/{owner}/{repo}/transfer <https://docs.github.com/en/rest/repos/repos#transfer-a-repository>`_
