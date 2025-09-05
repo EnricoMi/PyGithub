@@ -1891,7 +1891,7 @@ class UpdateMethodsTransformer(CstTransformerBase, abc.ABC):
         # update params: create missing, update type annotation of existing params
         query_parameters, body_parameters, _ = self.split_parameters_by_type(method.parameters, ["query", "body"])
         parameters = self.remove_pagination_parameters(query_parameters) + body_parameters
-        parameters_names = {arg.name: arg for arg in parameters}
+        parameters_names = {arg.python_name: arg for arg in parameters}
         parameters_sorted = self.required_first(parameters)
         existing_parameters = set()
         optional_exists = False
