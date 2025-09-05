@@ -261,6 +261,7 @@ from github.GithubObject import (
     is_optional,
     is_optional_list,
     is_undefined,
+    openapi_parameter,
 )
 from github.PaginatedList import PaginatedList
 
@@ -2401,6 +2402,7 @@ class Repository(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self.url}/commits/{sha}")
         return github.Commit.Commit(self._requester, headers, data, completed=True)
 
+    @openapi_parameter("author", type="AuthenticatedUser | NamedUser | str")
     def get_commits(
         self,
         sha: Opt[str] = NotSet,
@@ -2408,7 +2410,7 @@ class Repository(CompletableGithubObject):
         since: Opt[datetime] = NotSet,
         until: Opt[datetime] = NotSet,
         author: Opt[AuthenticatedUser | NamedUser | str] = NotSet,
-    ) -> PaginatedList[Commit]:
+    ):
         """
         :calls: `GET /repos/{owner}/{repo}/commits <https://docs.github.com/en/rest/reference/repos#commits>`_
         :param sha: string
@@ -4513,6 +4515,7 @@ class Repository(CompletableGithubObject):
             return None
         return github.RepoCodeSecurityConfig.RepoCodeSecurityConfig(self._requester, headers, data)
 
+    @openapi_parameter("team_ids", matches="teams")
     def transfer_ownership(self, new_owner: str, new_name: Opt[str] = NotSet, teams: Opt[list[int]] = NotSet) -> bool:
         """
         :calls: `POST /repos/{owner}/{repo}/transfer <https://docs.github.com/en/rest/repos/repos#transfer-a-repository>`_
