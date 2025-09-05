@@ -642,7 +642,7 @@ class CompletableGithubObject(GithubObject, ABC):
 
 
 # decorator to annotate methods with OpenAPI mapping information
-def openapi_parameter(name: str, *, type: str | None = None):
+def openapi_parameter(name: str, *, type: str | None = None, matches: str | None = None):
     def openapi_property_decorator(fn):
         return fn
 
