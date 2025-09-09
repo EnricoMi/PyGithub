@@ -3868,7 +3868,7 @@ class OpenApi:
                     f.close()
                     print(f"Updating temporary index {f.name}")
                     self.index(github_path, spec_file, f.name, check_verbs=False, dry_run=False)
-                    self.apply(
+                    self.apply_properties(
                         github_path,
                         spec_file,
                         f.name,
@@ -3880,7 +3880,7 @@ class OpenApi:
             else:
                 print("Updating index")
                 self.index(github_path, spec_file, index_filename, check_verbs=False, dry_run=False)
-                self.apply(
+                self.apply_properties(
                     github_path,
                     spec_file,
                     index_filename,
