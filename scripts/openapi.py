@@ -3951,6 +3951,7 @@ class OpenApi:
 
     def create_method(
         self,
+        github_path: str,
         spec_file: str,
         index_filename: str,
         class_name: str,
@@ -4019,6 +4020,13 @@ class OpenApi:
         tree = cst.parse_module(code)
         tree_updated = tree.visit(transformer)
         changed = self.write_code(code, tree_updated.code, clazz.filename, dry_run)
+
+        # populate the method (this only works on actual file changes)
+        if not dry_run:
+            print("Updating index")
+            self.index(github_path, spec_file, index_filename, check_verbs=False, dry_run=False)
+            self.apply_methods(spec_file, index_filename, [f"{class_name}.{method_name}"], dry_run, rewrite=True)
+
         return changed
 
     @staticmethod
@@ -4136,6 +4144,7 @@ class OpenApi:
             help="Return the value of this response property, instead of the entire response object",
             nargs="?",
         )
+        create_method_parser.add_argument("github_path", help="Path to PyGithub Python files")
         create_method_parser.add_argument("spec", help="Github API OpenAPI spec file")
         create_method_parser.add_argument("index_filename", help="Path of index file")
         create_method_parser.add_argument("class_name", help="PyGithub GithubObject class name")
@@ -4215,6 +4224,7 @@ class OpenApi:
                 )
             if self.args.component == "method":
                 changes = self.create_method(
+                    self.args.github_path,
                     self.args.spec,
                     self.args.index_filename,
                     self.args.class_name,
