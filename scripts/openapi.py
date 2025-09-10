@@ -73,26 +73,44 @@ def cst_to_python(value: cst.BaseExpression) -> Any:
     raise ValueError(f"unsupported expr: {value}")
 
 
+def as_schema(
+    schema_type: dict[str, Any],
+    schema_path: list[str],
+) -> list[str] | None:
+    if "$ref" in schema_type:
+        return [schema_type.get("$ref").strip("# ")]
+    elif "anyOf" in schema_type or "allOf" in schema_type:
+        key = "anyOf" if "anyOf" in schema_type else "allOf"
+        return [
+            schema
+            for idx, schema in enumerate(schema_type.get(key, []))
+            for schema in as_schema(
+                schema_type.get(key)[idx],
+                schema_path + [key, str(idx)],
+            )
+            if schema is not None
+        ]
+    if schema_type.get("type") == "object":
+        return ["/".join([""] + schema_path)]
+    return None
+
+
 def as_python_type(
     schema_type: dict[str, Any],
     schema_path: list[str],
-    schema_to_class: dict[str, str],
+    schema_to_classes: dict[str, list[str]],
     classes: dict[str, Any],
     *,
     paginated: bool = False,
     verbose: bool = False,
-    collect_new_schemas: list[str] | None = None,
+    collect_new_schemas: list[list[str]] | None = None,
 ) -> PythonType | GithubClass | None:
-    schema = None
-    data_type = schema_type.get("type")
-    if "$ref" in schema_type:
-        schema = schema_type.get("$ref").strip("# ")
-    elif "oneOf" in schema_type:
+    if "oneOf" in schema_type:
         types = [
             as_python_type(
                 t,
                 schema_path + ["oneOf", str(idx)],
-                schema_to_class,
+                schema_to_classes,
                 classes,
                 paginated=paginated,
                 verbose=verbose,
@@ -106,63 +124,106 @@ def as_python_type(
         if len(types) == 1:
             return types[0]
         return PythonType("union", sorted(types))
-    elif "allOf" in schema_type and len(schema_type.get("allOf")) == 1:
-        return as_python_type(
-            schema_type.get("allOf")[0],
-            schema_path + ["allOf", "0"],
-            schema_to_class,
-            classes,
-            paginated=paginated,
-            verbose=verbose,
-            collect_new_schemas=collect_new_schemas,
-        )
+
+    data_type = schema_type.get("type")
     if data_type == "object":
         if paginated and is_pagination_object(schema_type):
             schema_type, schema_path = get_paginated_property(schema_type, schema_path)
             return as_python_type(
                 schema_type,
                 schema_path,
-                schema_to_class,
+                schema_to_classes,
                 classes,
                 paginated=paginated,
                 verbose=verbose,
                 collect_new_schemas=collect_new_schemas,
             )
-        else:
-            schema = "/".join([""] + schema_path)
-    if schema is not None:
+
+    schemas = as_schema(schema_type, schema_path)
+    if schemas is not None:
         # these schemas are explicitly ignored
-        if schema in {"/components/schemas/empty-object"}:
-            return None
-        if schema in schema_to_class:
-            classes_of_schema = schema_to_class[schema]
-            if not isinstance(classes_of_schema, list):
-                raise ValueError(f"Expected list of types for schema: {schema}")
-            if len(classes_of_schema) == 0:
-                raise ValueError(f"Expected non-empty list of types for schema: {schema}")
-            if len(classes_of_schema) == 1:
-                class_name = classes_of_schema[0]
-                if class_name not in classes:
-                    if verbose:
-                        print(f"Class not found in index: {class_name}")
-                    return None
-                return GithubClass(**classes.get(class_name))
-            if verbose:
-                for class_name in classes:
-                    if class_name not in classes:
-                        print(f"Class not found in index: {class_name}")
-            return PythonType(
-                type="union",
-                inner_types=[GithubClass(**classes.get(cls)) for cls in sorted(classes_of_schema) if cls in classes],
-            )
-        if collect_new_schemas is not None:
-            if schema.split("/")[-1].startswith("_"):
-                print(f"Not creating schema {schema}")
+        print(f"Schemas: {schemas}")
+        schemas = [schema if schema not in {"/components/schemas/empty-object"} else None for schema in schemas]
+        print(f"Schemas: {schemas}")
+        print()
+
+        if len(schemas) == 1 and schemas[0] in schema_to_classes:
+            # single schema with an implementing class for this type
+            schema = schemas[0]
+            if schema in schema_to_classes:
+                classes_of_schema = schema_to_classes[schema]
+                if not isinstance(classes_of_schema, list):
+                    raise ValueError(f"Expected list of types for schema: {schema}")
+                if len(classes_of_schema) == 0:
+                    raise ValueError(f"Expected non-empty list of types for schema: {schema}")
+                return PythonType.union(
+                    *[GithubClass(**classes.get(cls)) for cls in sorted(classes_of_schema) if cls in classes],
+                )
+        if len(schemas) > 1:
+            # multiple schemas means the class should implement multiple schemas
+            implementing_classes = {
+                PythonType.union(
+                    *[GithubClass(**classes.get(cls)) for cls in sorted(classes_of_schema) if cls in classes]
+                )
+                for schema in schemas
+                if schema in schema_to_classes
+                for classes_of_schema in [schema_to_classes[schema]]
+            }
+            unimplemented_schemas = [schema for schema in schemas if schema not in schema_to_classes]
+            if len(unimplemented_schemas) == 0:
+                # all schemas are implemented
+                if len(implementing_classes) == 1:
+                    # all schemas are implemented by a single class
+                    return next(iter(implementing_classes))
+                elif len(implementing_classes) > 1:
+                    # multiple classes implement these schemas
+                    print("These schemas are implemented by multiple classes, where they should be implemented by one:")
+                    for schema in schemas:
+                        if schema not in unimplemented_schemas:
+                            print(f"- {schema}")
+                    print("Those schemas are implemented by these classes:")
+                    for implementing_class in implementing_classes:
+                        print(f"- {implementing_class}")
+                    return PythonType("union", sorted(implementing_classes))
             else:
-                collect_new_schemas.append(schema)
-        if verbose:
+                # some schemas are not implemented
+                if len(implementing_classes) == 0:
+                    # none of the schemas are implemented
+                    # a single class should implement those
+                    if collect_new_schemas is not None:
+                        collect_new_schemas.append(schemas)
+                else:
+                    # some schemas are implemented
+                    if len(implementing_classes) == 1:
+                        # all implemented schemas are implemented by the same class
+                        clazz = next(iter(implementing_classes))
+                        print(f"Class {clazz} implements these schemas:")
+                        for schema in schemas:
+                            if schema not in unimplemented_schemas:
+                                print(f"- {schema}")
+                        print("This class should also implement these schemas:")
+                        for schema in unimplemented_schemas:
+                            print(f"- {schema}")
+                        return clazz
+                    elif len(implementing_classes) > 1:
+                        # multiple classes implement these schemas
+                        print(
+                            "These schemas are implemented by multiple classes, where they should be implemented by one:"
+                        )
+                        for schema in schemas:
+                            if schema not in unimplemented_schemas:
+                                print(f"- {schema}")
+                        print("Those schemas are implemented by these classes:")
+                        for implementing_class in implementing_classes:
+                            print(f"- {implementing_class}")
+                        print("These schemas are not implemented:")
+                        for schema in unimplemented_schemas:
+                            print(f"- {schema}")
+                        print()
+
+        if verbose and not schema_path[-1].startswith("_"):
             # here we use dot-notation to ease usage with jq
-            print(f"Schema not implemented: {schema or '.'.join([''] + schema_path)}")
+            print(f"Schema not implemented: {schemas or '.'.join([''] + schema_path)}")
         return PythonType(type="dict", inner_types=[PythonType("str"), PythonType("Any")])
 
     if data_type is None:
@@ -177,7 +238,7 @@ def as_python_type(
                 as_python_type(
                     schema_type.get("items"),
                     schema_path + ["items"],
-                    schema_to_class,
+                    schema_to_classes,
                     classes,
                     paginated=False,
                     verbose=verbose,
@@ -2425,7 +2486,7 @@ class CreateClassMethodTransformer(CstTransformerBase):
         api_response: str | None,
         prefix_path,
         return_property: str | None,
-        create_new_class_func: Callable[[str], dict[str, Any]] | None,
+        create_new_class_func: Callable[[list[str]], dict[str, Any]] | None,
     ):
         super().__init__()
         self.spec = spec
@@ -2809,7 +2870,7 @@ class OpenApi:
         schema_type: dict[str, Any],
         schema_path: list[str],
         *,
-        collect_new_schemas: list[str] | None = None,
+        collect_new_schemas: list[list[str]] | None = None,
     ) -> PythonType | GithubClass | None:
         return as_python_type(
             schema_type,
@@ -3931,19 +3992,19 @@ class OpenApi:
         spec: dict[str, Any],
         classes: dict[str, Any],
         tests: bool,
-        schema: str,
+        schemas: list[str],
     ) -> dict[str, Any]:
-        print(schema)
-        new_class_name = "".join([term[0].upper() + term[1:] for term in re.split("[-_]", schema.split("/")[-1])])
+        print(schemas)
+        new_class_name = "".join([term[0].upper() + term[1:] for term in re.split("[-_]", schemas[0].split("/")[-1])])
         if new_class_name in classes:
             # we probably created that class in an earlier iteration, or we have a name collision here
             with open(index_filename) as r:
                 return json.load(r)
-        is_completable = "url" in self.get_schema(spec, schema)[1].get("properties", [])
+        is_completable = any("url" in self.get_schema(spec, schema)[1].get("properties", []) for schema in schemas)
         parent_name = "CompletableGithubObject" if is_completable else "NonCompletableGithubObject"
         # TODO: get path from schema via indices.path_to_return_classes, get docs from spec.paths.PATH.get.externalDocs.url
         docs_url = "https://docs.github.com/en/rest"
-        print(f"Drafting class {new_class_name} for new schema {schema}")
+        print(f"Drafting class {new_class_name} for new schema {', '.join(schemas)}")
         self.create_class(
             github_path,
             spec_file,
@@ -3951,7 +4012,7 @@ class OpenApi:
             new_class_name,
             parent_name,
             docs_url,
-            [schema],
+            schemas,
             dry_run=False,
             tests=tests,
             handle_new_schemas=HandleNewSchemas.create_class,
@@ -4011,11 +4072,11 @@ class OpenApi:
         create_new_class_func = None
         if handle_new_schemas == HandleNewSchemas.create_class:
 
-            def create_new_class(schema: str) -> dict[str, Any]:
+            def create_new_class(schemas: list[str]) -> dict[str, Any]:
                 classes = index.get("classes", {})
                 github_path = index.get("sources")
                 self.create_class_for_schema(
-                    github_path, spec_file, index_filename, spec, classes, tests=True, schema=schema
+                    github_path, spec_file, index_filename, spec, classes, tests=True, schemas=schemas
                 )
                 return self.read_index(index_filename)
 
