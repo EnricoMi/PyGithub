@@ -371,28 +371,69 @@ class Issue(CompletableGithubObject):
 
     def as_pull_request(self) -> PullRequest:
         """
-        :calls: `GET /repos/{owner}/{repo}/pulls/{pull_number} <https://docs.github.com/en/rest/reference/pulls>`_
+        Get a pull request.
+
+        Draft pull requests are available in public repositories with GitHub Free and GitHub Free for organizations, GitHub Pro, and legacy per-repository billing plans, and in public and private repositories with GitHub Team and GitHub Enterprise Cloud. For more information, see [GitHub's products](https://docs.github.com/github/getting-started-with-github/githubs-products) in the GitHub Help documentation.
+
+        Lists details of a pull request by providing its number.
+
+        When you get, [create](https://docs.github.com/rest/pulls/pulls/#create-a-pull-request), or [edit](https://docs.github.com/rest/pulls/pulls#update-a-pull-request) a pull request, GitHub creates a merge commit to test whether the pull request can be automatically merged into the base branch. This test commit is not added to the base branch or the head branch. You can review the status of the test commit using the `mergeable` key. For more information, see "[Checking mergeability of pull requests](https://docs.github.com/rest/guides/getting-started-with-the-git-database-api#checking-mergeability-of-pull-requests)".
+
+        The value of the `mergeable` attribute can be `true`, `false`, or `null`. If the value is `null`, then GitHub has started a background job to compute the mergeability. After giving the job time to complete, resubmit the request. When the job finishes, you will see a non-`null` value for the `mergeable` attribute in the response. If `mergeable` is `true`, then `merge_commit_sha` will be the SHA of the _test_ merge commit.
+
+        The value of the `merge_commit_sha` attribute changes depending on the state of the pull request. Before merging a pull request, the `merge_commit_sha` attribute holds the SHA of the _test_ merge commit. After merging a pull request, the `merge_commit_sha` attribute changes depending on how you merged the pull request:
+
+        *   If merged as a [merge commit](https://docs.github.com/articles/about-merge-methods-on-github/), `merge_commit_sha` represents the SHA of the merge commit.
+        *   If merged via a [squash](https://docs.github.com/articles/about-merge-methods-on-github/#squashing-your-merge-commits), `merge_commit_sha` represents the SHA of the squashed commit on the base branch.
+        *   If [rebased](https://docs.github.com/articles/about-merge-methods-on-github/#rebasing-and-merging-your-commits), `merge_commit_sha` represents the commit that the base branch was updated to.
+
+        Pass the appropriate [media type](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types) to fetch diff and patch formats.
+
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+        - **`application/vnd.github.diff`**: For more information, see "[git-diff](https://git-scm.com/docs/git-diff)" in the Git documentation. If a diff is corrupt, contact us through the [GitHub Support portal](https://support.github.com/). Include the repository name and pull request ID in your message.
+
+        :calls: `GET /repos/{owner}/{repo}/pulls/{pull_number} <https://docs.github.com/rest/pulls/pulls#get-a-pull-request>`_
+
         """
         headers, data = self._requester.requestJsonAndCheck("GET", "/pulls/".join(self.url.rsplit("/issues/", 1)))
         return github.PullRequest.PullRequest(self._requester, headers, data, completed=True)
 
-    def add_to_assignees(self, *assignees: NamedUser | str) -> None:
+    def add_to_assignees(self, *assignees: NamedUser | str) -> Issue:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/assignees <https://docs.github.com/en/rest/reference/issues#assignees>`_
+        Add assignees to an issue.
+
+        Adds up to 10 assignees to an issue. Users already assigned to an issue are not replaced.
+
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/assignees <https://docs.github.com/rest/issues/assignees#add-assignees-to-an-issue>`_
+        :param assignees: Usernames of people to assign this issue to. _NOTE: Only users with push access can add assignees to an issue. Assignees are silently ignored otherwise._
+
         """
-        assert all(isinstance(element, (github.NamedUser.NamedUser, str)) for element in assignees), assignees
-        post_parameters = {
-            "assignees": [
-                assignee.login if isinstance(assignee, github.NamedUser.NamedUser) else assignee
-                for assignee in assignees
-            ]
-        }
+        assert is_optional_list(assignees, (NamedUser | str)), assignees
+        assignees = [
+            assignee.login if isinstance(assignee, github.NamedUser.NamedUser) else assignee for assignee in assignees
+        ]
+        post_parameters = NotSet.remove_unset_items(
+            {
+                "assignees": assignees,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck("POST", f"{self.url}/assignees", input=post_parameters)
         self._useAttributes(data)
 
-    def add_to_labels(self, *labels: Label | str) -> None:
+    def add_to_labels(self, *labels: Label | str) -> list[Label]:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        Add labels to an issue.
+
+        Adds labels to an issue. If you provide an empty array of labels, all labels are removed from the issue.
+
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/labels
+        <https://docs.github.com/rest/issues/labels#add-labels-to-an-issue>`_
+
         """
         assert all(isinstance(element, (github.Label.Label, str)) for element in labels), labels
         post_parameters = [label.name if isinstance(label, github.Label.Label) else label for label in labels]
@@ -400,76 +441,139 @@ class Issue(CompletableGithubObject):
 
     def create_comment(self, body: str) -> IssueComment:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/comments <https://docs.github.com/en/rest/reference/issues#comments>`_
+        Create an issue comment.
+
+        You can use the REST API to create comments on issues and pull requests. Every pull request is an issue, but not every issue is a pull request.
+
+        This endpoint triggers [notifications](https://docs.github.com/github/managing-subscriptions-and-notifications-on-github/about-notifications).
+        Creating content too quickly using this endpoint may result in secondary rate limiting.
+        For more information, see "[Rate limits for the API](https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits)"
+        and "[Best practices for using the REST API](https://docs.github.com/rest/guides/best-practices-for-using-the-rest-api)."
+
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/comments <https://docs.github.com/rest/issues/comments#create-an-issue-comment>`_
+        :param body: The contents of the comment.
+
         """
         assert isinstance(body, str), body
-        post_parameters = {
-            "body": body,
-        }
+        post_parameters = NotSet.remove_unset_items(
+            {
+                "body": body,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck("POST", f"{self.url}/comments", input=post_parameters)
         return github.IssueComment.IssueComment(self._requester, headers, data, completed=True)
 
     def delete_labels(self) -> None:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        Remove all labels from an issue.
+
+        Removes all labels from an issue.
+
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels
+        <https://docs.github.com/rest/issues/labels#remove-all-labels-from-an-issue>`_
+
         """
         headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/labels")
 
     def edit(
         self,
-        title: Opt[str] = NotSet,
+        title: Opt[int | str] = NotSet,
         body: Opt[str] = NotSet,
-        assignee: Opt[str | NamedUser | None] = NotSet,
+        assignee: Opt[str] = NotSet,
         state: Opt[str] = NotSet,
-        milestone: Opt[Milestone | None] = NotSet,
-        labels: Opt[list[str]] = NotSet,
-        assignees: Opt[list[NamedUser | str]] = NotSet,
         state_reason: Opt[str] = NotSet,
-    ) -> None:
+        milestone: Opt[int | str] = NotSet,
+        labels: Opt[list[dict[str, Any] | str]] = NotSet,
+        assignees: Opt[list[str]] = NotSet,
+        type: Opt[str] = NotSet,
+    ) -> Issue:
         """
-        :calls: `PATCH /repos/{owner}/{repo}/issues/{issue_number} <https://docs.github.com/en/rest/reference/issues>`_
-        :param assignee: deprecated, use `assignees` instead. `assignee=None` means to remove current assignee.
-        :param milestone: `milestone=None` means to remove current milestone.
+        Update an issue.
+
+        Issue owners and users with push access or Triage role can edit an issue.
+
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `PATCH /repos/{owner}/{repo}/issues/{issue_number} <https://docs.github.com/rest/issues/issues#update-an-issue>`_
+        :param title: The title of the issue.
+        :param body: The contents of the issue.
+        :param assignee: Username to assign to this issue. **This field is closing down.**
+        :param state: The open or closed state of the issue.
+        :param state_reason: The reason for the state change. Ignored unless `state` is changed.
+        :param milestone:
+        :param labels: Labels to associate with this issue. Pass one or more labels to _replace_ the set of labels on this issue. Send an empty array (`[]`) to clear all labels from the issue. Only users with push access can set labels for issues. Without push access to the repository, label changes are silently dropped.
+        :param assignees: Usernames to assign to this issue. Pass one or more user logins to _replace_ the set of assignees on this issue. Send an empty array (`[]`) to clear all assignees from the issue. Only users with push access can set assignees for new issues. Without push access to the repository, assignee changes are silently dropped.
+        :param type: The name of the issue type to associate with this issue or use `null` to remove the current issue type. Only users with push access can set the type for issues. Without push access to the repository, type changes are silently dropped.
+
         """
-        assert is_optional(title, str), title
+        assert is_optional(title, (int, str)), title
         assert is_optional(body, str), body
-        assert assignee is None or is_optional(assignee, (github.NamedUser.NamedUser, str)), assignee
-        assert is_optional_list(assignees, (github.NamedUser.NamedUser, str)), assignees
+        assert is_optional(assignee, (github.NamedUser.NamedUser, str)), assignee
         assert is_optional(state, str), state
-        assert milestone is None or is_optional(milestone, github.Milestone.Milestone), milestone
-        assert is_optional_list(labels, str), labels
-
-        post_parameters = NotSet.remove_unset_items(
-            {
-                "title": title,
-                "body": body,
-                "state": state,
-                "state_reason": state_reason,
-                "labels": labels,
-                "assignee": assignee._identity
-                if isinstance(assignee, github.NamedUser.NamedUser)
-                else (assignee or ""),
-                "milestone": milestone._identity
-                if isinstance(milestone, github.Milestone.Milestone)
-                else (milestone or ""),
-            }
-        )
-
+        assert is_optional(state_reason, str), state_reason
+        assert is_optional(milestone, (int, str, github.Milestone.Milestone)), milestone
+        assert is_optional_list(labels, (dict[str, Any], str)), labels
+        assert is_optional_list(assignees, str), assignees
+        assert is_optional(type, str), type
+        assignee = assignee._identity if isinstance(assignee, github.NamedUser.NamedUser) else (assignee or "")
         if is_defined(assignees):
-            post_parameters["assignees"] = [
+            assignees = [
                 element._identity if isinstance(element, github.NamedUser.NamedUser) else element
                 for element in assignees
             ]
+        milestone = milestone._identity if isinstance(milestone, github.Milestone.Milestone) else (milestone or "")
 
-        headers, data = self._requester.requestJsonAndCheck("PATCH", self.url, input=post_parameters)
+        patch_parameters = NotSet.remove_unset_items(
+            {
+                "title": title,
+                "body": body,
+                "assignee": assignee,
+                "state": state,
+                "state_reason": state_reason,
+                "milestone": milestone,
+                "labels": labels,
+                "assignees": assignees,
+                "type": type,
+            }
+        )
+
+        headers, data = self._requester.requestJsonAndCheck("PATCH", self.url, input=patch_parameters)
         self._useAttributes(data)
 
-    def lock(self, lock_reason: str) -> None:
+    def lock(self, lock_reason: Opt[str] = NotSet) -> None:
         """
-        :calls: `PUT /repos/{owner}/{repo}/issues/{issue_number}/lock <https://docs.github.com/en/rest/reference/issues>`_
+        Lock an issue.
+
+        Users with push access can lock an issue or pull request's conversation.
+
+        Note that, if you choose not to pass any parameters, you'll need to set `Content-Length` to zero when calling out to this endpoint. For more information, see "[HTTP method](https://docs.github.com/rest/guides/getting-started-with-the-rest-api#http-method)."
+
+        :calls: `PUT /repos/{owner}/{repo}/issues/{issue_number}/lock <https://docs.github.com/rest/issues/issues#lock-an-issue>`_
+        :param lock_reason: The reason for locking the issue or pull request conversation. Lock will fail if you don't use one of these reasons:
+            * `off-topic`
+            * `too heated`
+            * `resolved`
+            * `spam`
+
         """
-        assert isinstance(lock_reason, str), lock_reason
-        put_parameters = {"lock_reason": lock_reason}
+        assert is_optional(lock_reason, str), lock_reason
+        put_parameters = NotSet.remove_unset_items(
+            {
+                "lock_reason": lock_reason,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
             f"{self.url}/lock",
@@ -479,13 +583,33 @@ class Issue(CompletableGithubObject):
 
     def unlock(self) -> None:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/lock <https://docs.github.com/en/rest/reference/issues>`_
+        Unlock an issue.
+
+        Users with push access can unlock an issue's conversation.
+
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/lock
+        <https://docs.github.com/rest/issues/issues#unlock-an-issue>`_
+
         """
         headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/lock")
 
-    def get_comment(self, id: int) -> IssueComment:
+    def get_comment(
+        self,
+    ) -> IssueComment:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/comments/{comment_id} <https://docs.github.com/en/rest/reference/issues#comments>`_
+        Get an issue comment.
+
+        You can use the REST API to get comments on issues and pull requests. Every pull request is an issue, but not every issue is a pull request.
+
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `GET /repos/{owner}/{repo}/issues/comments/{comment_id} <https://docs.github.com/rest/issues/comments#get-an-issue-comment>`_
+
         """
         assert isinstance(id, int), id
         headers, data = self._requester.requestJsonAndCheck("GET", f"{self._parentUrl(self.url)}/comments/{id}")
@@ -493,9 +617,29 @@ class Issue(CompletableGithubObject):
 
     def get_comments(self, since: Opt[datetime] = NotSet) -> PaginatedList[IssueComment]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/comments <https://docs.github.com/en/rest/reference/issues#comments>`_
+        List issue comments.
+
+        You can use the REST API to list comments on issues and pull requests. Every pull request is an issue, but not every issue is a pull request.
+
+        Issue comments are ordered by ascending ID.
+
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/comments <https://docs.github.com/rest/issues/comments#list-issue-comments>`_
+        :param since: Only show results that were last updated after the given time. This is a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format: `YYYY-MM-DDTHH:MM:SSZ`.
+
         """
-        url_parameters = {}
+        assert is_optional(since, datetime), since
+        url_parameters = NotSet.remove_unset_items(
+            {
+                "since": since,
+            }
+        )
         if is_defined(since):
             assert isinstance(since, datetime), since
             url_parameters["since"] = since.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -509,7 +653,13 @@ class Issue(CompletableGithubObject):
 
     def get_events(self) -> PaginatedList[IssueEvent]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/events <https://docs.github.com/en/rest/reference/issues#events>`_
+        List issue events.
+
+        Lists all events for an issue.
+
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/events
+        <https://docs.github.com/rest/issues/events#list-issue-events>`_
+
         """
         return PaginatedList(
             github.IssueEvent.IssueEvent,
@@ -521,28 +671,47 @@ class Issue(CompletableGithubObject):
 
     def get_labels(self) -> PaginatedList[Label]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        List labels for an issue.
+
+        Lists all labels for an issue.
+
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/labels
+        <https://docs.github.com/rest/issues/labels#list-labels-for-an-issue>`_
+
         """
         return PaginatedList(github.Label.Label, self._requester, f"{self.url}/labels", None)
 
-    def remove_from_assignees(self, *assignees: NamedUser | str) -> None:
+    def remove_from_assignees(self, *assignees: NamedUser | str) -> Issue:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/assignees <https://docs.github.com/en/rest/reference/issues#assignees>`_
+        Remove assignees from an issue.
+
+        Removes one or more assignees from an issue.
+
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/assignees <https://docs.github.com/rest/issues/assignees#remove-assignees-from-an-issue>`_
+        :param assignees: Usernames of assignees to remove from an issue. _NOTE: Only users with push access can remove assignees from an issue. Assignees are silently ignored otherwise._
+
         """
-        assert all(isinstance(element, (github.NamedUser.NamedUser, str)) for element in assignees), assignees
-        post_parameters = {
-            "assignees": [
-                assignee.login if isinstance(assignee, github.NamedUser.NamedUser) else assignee
-                for assignee in assignees
-            ]
-        }
-        headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/assignees", input=post_parameters)
+        assert is_optional_list(assignees, (github.NamedUser.NamedUser, str)), assignees
+        assignees = [
+            assignee.login if isinstance(assignee, github.NamedUser.NamedUser) else assignee for assignee in assignees
+        ]
+        delete_parameters = NotSet.remove_unset_items(
+            {
+                "assignees": assignees,
+            }
+        )
+        headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/assignees", input=delete_parameters)
         self._useAttributes(data)
 
     @openapi_parameter("label", matches="name", type="Label | str")
-    def remove_from_labels(self, label: Label | str) -> None:
+    def remove_from_labels(self, label: Label | str) -> list[Label]:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name} <https://docs.github.com/en/rest/reference/issues#labels>`_
+        Remove a label from an issue.
+
+        Removes the specified label from the issue, and returns the remaining labels on the issue. This endpoint returns a `404 Not Found` status if the label does not exist.
+
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name} <https://docs.github.com/rest/issues/labels#remove-a-label-from-an-issue>`_
+
         """
         assert isinstance(label, (github.Label.Label, str)), label
         if isinstance(label, github.Label.Label):
@@ -551,30 +720,59 @@ class Issue(CompletableGithubObject):
             label = urllib.parse.quote(label)
         headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/labels/{label}")
 
-    def set_labels(self, *labels: Label | str) -> None:
+    def set_labels(self, *labels: Label | str) -> list[Label]:
         """
-        :calls: `PUT /repos/{owner}/{repo}/issues/{issue_number}/labels <https://docs.github.com/en/rest/reference/issues#labels>`_
+        Set labels for an issue.
+
+        Removes any previous labels and sets the new labels for an issue.
+
+        :calls: `PUT /repos/{owner}/{repo}/issues/{issue_number}/labels
+        <https://docs.github.com/rest/issues/labels#set-labels-for-an-issue>`_
+
         """
         assert all(isinstance(element, (github.Label.Label, str)) for element in labels), labels
         post_parameters = [label.name if isinstance(label, github.Label.Label) else label for label in labels]
         headers, data = self._requester.requestJsonAndCheck("PUT", f"{self.url}/labels", input=post_parameters)
 
-    def get_reactions(self) -> PaginatedList[Reaction]:
+    def get_reactions(self, content: Opt[str] = NotSet) -> PaginatedList[Reaction]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/reactions <https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue>`_
+        List reactions for an issue.
+
+        List the reactions to an [issue](https://docs.github.com/rest/issues/issues#get-an-issue).
+
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/reactions <https://docs.github.com/rest/reactions/reactions#list-reactions-for-an-issue>`_
+        :param content: Returns a single [reaction type](https://docs.github.com/rest/reactions/reactions#about-reactions). Omit this parameter to list all reactions to an issue.
+
         """
+        assert is_optional(content, str), content
+        url_parameters = NotSet.remove_unset_items(
+            {
+                "content": content,
+            }
+        )
         return PaginatedList(
             github.Reaction.Reaction,
             self._requester,
             f"{self.url}/reactions",
-            None,
+            url_parameters,
             headers={"Accept": Consts.mediaTypeReactionsPreview},
         )
 
     def get_sub_issues(self) -> PaginatedList[SubIssue]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues <https://docs.github.com/en/rest/issues/sub-issues?apiVersion=2022-11-28>`_
-        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Issue.Issue`
+        List sub-issues.
+
+        You can use the REST API to list the sub-issues on an issue.
+
+        This endpoint supports the following custom media types. For more information, see [Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types).
+
+        - **`application/vnd.github.raw+json`**: Returns the raw Markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the Markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's Markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues <https://docs.github.com/rest/issues/sub-issues#list-sub-issues>`_
+
         """
         return PaginatedList(
             SubIssue,
@@ -584,21 +782,37 @@ class Issue(CompletableGithubObject):
             headers={"Accept": Consts.mediaType},
         )
 
-    def add_sub_issue(self, sub_issue: int | Issue) -> SubIssue:
+    def add_sub_issue(self, sub_issue: int | Issue, replace_parent: Opt[bool] = NotSet) -> SubIssue:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues <https://docs.github.com/en/rest/issues/sub-issues>`_
-        :param sub_issue: int (sub-issue ID) or Issue object. Note: Use sub_issue.id, not sub_issue.number
-        :rtype: :class:`github.Issue.SubIssue`
+        Add sub-issue.
+
+        You can use the REST API to add sub-issues to issues.
+
+        Creating content too quickly using this endpoint may result in secondary rate limiting.
+        For more information, see "[Rate limits for the API](https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits)"
+        and "[Best practices for using the REST API](https://docs.github.com/rest/guides/best-practices-for-using-the-rest-api)."
+
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass any specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues <https://docs.github.com/rest/issues/sub-issues#add-sub-issue>`_
+        :param sub_issue: The id of the sub-issue to add. The sub-issue must belong to the same repository owner as the parent issue
+        :param replace_parent: Option that, when true, instructs the operation to replace the sub-issues current parent issue
+
         """
         assert isinstance(sub_issue, (int, Issue)), sub_issue
-
-        sub_issue_id = sub_issue
-        if isinstance(sub_issue, Issue):
-            sub_issue_id = sub_issue.id
-
-        post_parameters: dict[str, Any] = {
-            "sub_issue_id": sub_issue_id,
-        }
+        assert is_optional(replace_parent, bool), replace_parent
+        sub_issue_id = sub_issue.id if isinstance(sub_issue, Issue) else sub_issue
+        post_parameters = NotSet.remove_unset_items(
+            {
+                "sub_issue_id": sub_issue_id,
+                "replace_parent": replace_parent,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck(
             "POST",
             f"{self.url}/sub_issues",
@@ -609,45 +823,69 @@ class Issue(CompletableGithubObject):
 
     def remove_sub_issue(self, sub_issue: int | Issue) -> SubIssue:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/sub_issue <https://docs.github.com/en/rest/issues/sub-issues>`_
-        :param sub_issue: int (sub-issue ID) or Issue object. Note: Use sub_issue.id, not sub_issue.number
-        :rtype: :class:`github.Issue.SubIssue`
+        Remove sub-issue.
+
+        You can use the REST API to remove a sub-issue from an issue.
+        Removing content too quickly using this endpoint may result in secondary rate limiting.
+        For more information, see "[Rate limits for the API](https://docs.github.com/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits)"
+        and "[Best practices for using the REST API](https://docs.github.com/rest/guides/best-practices-for-using-the-rest-api)."
+        This endpoint supports the following custom media types. For more information, see "[Media types](https://docs.github.com/rest/using-the-rest-api/getting-started-with-the-rest-api#media-types)."
+        - **`application/vnd.github.raw+json`**: Returns the raw markdown body. Response will include `body`. This is the default if you do not pass a specific media type.
+        - **`application/vnd.github.text+json`**: Returns a text only representation of the markdown body. Response will include `body_text`.
+        - **`application/vnd.github.html+json`**: Returns HTML rendered from the body's markdown. Response will include `body_html`.
+        - **`application/vnd.github.full+json`**: Returns raw, text, and HTML representations. Response will include `body`, `body_text`, and `body_html`.
+
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/sub_issue <https://docs.github.com/rest/issues/sub-issues#remove-sub-issue>`_
+        :param sub_issue: The id of the sub-issue to remove
+
         """
         assert isinstance(sub_issue, (int, Issue)), sub_issue
-
-        sub_issue_id = sub_issue
-        if isinstance(sub_issue, Issue):
-            sub_issue_id = sub_issue.id
-
-        post_parameters: dict[str, Any] = {
-            "sub_issue_id": sub_issue_id,
-        }
+        sub_issue_id = sub_issue.id if isinstance(sub_issue, Issue) else sub_issue
+        delete_parameters = NotSet.remove_unset_items(
+            {
+                "sub_issue_id": sub_issue_id,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck(
             "DELETE",
             f"{self.url}/sub_issue",
-            input=post_parameters,
+            input=delete_parameters,
             headers={"Accept": Consts.mediaType},
         )
         return SubIssue(self._requester, headers, data, completed=True)
 
-    def prioritize_sub_issue(self, sub_issue: int | Issue, after_sub_issue: int | Issue | None) -> SubIssue:
+    def prioritize_sub_issue(
+        self,
+        sub_issue: int | Issue,
+        after_sub_issue: Opt[int | Issue] = NotSet,
+        before_sub_issue: Opt[int | Issue] = NotSet,
+    ) -> Issue:
         """
-        :calls: `PATCH /repos/{owner}/{repo}/issues/{issue_number}/sub_issues/priority <https://docs.github.com/en/rest/issues/sub-issues>`_
-        :param sub_issue: int (sub-issue ID) or Issue object. Note: Use sub_issue.id, not sub_issue.number
-        :param after_sub_issue: int (sub-issue ID) or Issue object. Note: Use sub_issue.id, not sub_issue.number
-        :rtype: :class:`github.Issue.SubIssue`
+        Reprioritize sub-issue.
+
+        You can use the REST API to reprioritize a sub-issue to a different position in the parent list.
+
+        :calls: `PATCH /repos/{owner}/{repo}/issues/{issue_number}/sub_issues/priority <https://docs.github.com/rest/issues/sub-issues#reprioritize-sub-issue>`_
+        :param sub_issue: The id of the sub-issue to reprioritize
+        :param after_sub_issue: The id of the sub-issue to be prioritized after (either positional argument after OR before should be specified).
+        :param before_sub_issue: The id of the sub-issue to be prioritized before (either positional argument after OR before should be specified).
+
         """
         assert isinstance(sub_issue, (int, Issue)), sub_issue
-        assert after_sub_issue is None or isinstance(after_sub_issue, (int, Issue)), after_sub_issue
+        assert is_optional(after_sub_issue, (int, Issue)), after_sub_issue
+        assert is_optional(before_sub_issue, (int, Issue)), after_sub_issue
 
-        sub_issue_id = sub_issue
-        if isinstance(sub_issue, Issue):
-            sub_issue_id = sub_issue.id
-        after_sub_issue_id = after_sub_issue
-        if isinstance(after_sub_issue, Issue):
-            after_sub_issue_id = after_sub_issue.id
+        sub_issue_id = sub_issue.id if isinstance(sub_issue, Issue) else sub_issue
+        before_sub_issue_id = before_sub_issue.id if isinstance(before_sub_issue, Issue) else before_sub_issue
+        after_sub_issue_id = after_sub_issue.id if isinstance(after_sub_issue, Issue) else after_sub_issue
 
-        patch_parameters = {"sub_issue_id": sub_issue_id, "after_id": after_sub_issue_id}
+        patch_parameters = NotSet.remove_unset_items(
+            {
+                "sub_issue_id": sub_issue_id,
+                "after_id": after_sub_issue_id,
+                "before_id": before_sub_issue_id,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH",
             f"{self.url}/sub_issues/priority",
@@ -656,14 +894,22 @@ class Issue(CompletableGithubObject):
         )
         return SubIssue(self._requester, headers, data, completed=True)
 
-    def create_reaction(self, reaction_type: str) -> Reaction:
+    def create_reaction(self, reaction_type: str) -> dict[str, Any]:
         """
-        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/reactions <https://docs.github.com/en/rest/reference/reactions>`_
+        Create reaction for an issue.
+
+        Create a reaction to an [issue](https://docs.github.com/rest/issues/issues#get-an-issue). A response with an HTTP `200` status means that you already added the reaction type to this issue.
+
+        :calls: `POST /repos/{owner}/{repo}/issues/{issue_number}/reactions <https://docs.github.com/rest/reactions/reactions#create-reaction-for-an-issue>`_
+        :param reaction_type: The [reaction type](https://docs.github.com/rest/reactions/reactions#about-reactions) to add to the issue.
+
         """
         assert isinstance(reaction_type, str), reaction_type
-        post_parameters = {
-            "content": reaction_type,
-        }
+        post_parameters = NotSet.remove_unset_items(
+            {
+                "content": reaction_type,
+            }
+        )
         headers, data = self._requester.requestJsonAndCheck(
             "POST",
             f"{self.url}/reactions",
@@ -675,7 +921,16 @@ class Issue(CompletableGithubObject):
     @openapi_parameter("reaction_id", type="int", input=True)
     def delete_reaction(self, reaction_id: int) -> bool:
         """
-        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/reactions/{reaction_id} <https://docs.github.com/en/rest/reference/reactions#delete-an-issue-reaction>`_
+        Delete an issue reaction.
+
+        > [!NOTE]
+        > You can also specify a repository by `repository_id` using the route `DELETE /repositories/:repository_id/issues/:issue_number/reactions/:reaction_id`.
+
+        Delete a reaction to an [issue](https://docs.github.com/rest/issues/issues#get-an-issue).
+
+        :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/reactions/{reaction_id} <https://docs.github.com/rest/reactions/reactions#delete-an-issue-reaction>`_
+        :param reaction_id: The unique identifier of the reaction.
+
         """
         assert isinstance(reaction_id, int), reaction_id
         status, _, _ = self._requester.requestJson(
@@ -687,7 +942,12 @@ class Issue(CompletableGithubObject):
 
     def get_timeline(self) -> PaginatedList[TimelineEvent]:
         """
-        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/timeline <https://docs.github.com/en/rest/reference/issues#list-timeline-events-for-an-issue>`_
+        List timeline events for an issue.
+
+        List all timeline events for an issue.
+
+        :calls: `GET /repos/{owner}/{repo}/issues/{issue_number}/timeline <https://docs.github.com/rest/issues/timeline#list-timeline-events-for-an-issue>`_
+
         """
         return PaginatedList(
             github.TimelineEvent.TimelineEvent,
