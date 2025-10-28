@@ -91,6 +91,7 @@ from github.GithubObject import (
     is_optional,
     is_optional_list,
     is_undefined,
+    openapi_parameter,
 )
 from github.PaginatedList import PaginatedList
 
@@ -538,6 +539,7 @@ class Issue(CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck("DELETE", f"{self.url}/assignees", input=post_parameters)
         self._useAttributes(data)
 
+    @openapi_parameter("label", matches="name", type="Label | str")
     def remove_from_labels(self, label: Label | str) -> None:
         """
         :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name} <https://docs.github.com/en/rest/reference/issues#labels>`_
@@ -670,6 +672,7 @@ class Issue(CompletableGithubObject):
         )
         return github.Reaction.Reaction(self._requester, headers, data, completed=True)
 
+    @openapi_parameter("reaction_id", type="int", input=True)
     def delete_reaction(self, reaction_id: int) -> bool:
         """
         :calls: `DELETE /repos/{owner}/{repo}/issues/{issue_number}/reactions/{reaction_id} <https://docs.github.com/en/rest/reference/reactions#delete-an-issue-reaction>`_
