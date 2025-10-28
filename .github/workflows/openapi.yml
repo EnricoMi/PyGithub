@@ -104,6 +104,7 @@ jobs:
               git commit -a -m "Revert workflow changes of this branch"
             fi
             echo "Pushing changes to origin openapi/autosync"
+            git diff origin/main
             git push origin openapi/autosync
           fi
 
