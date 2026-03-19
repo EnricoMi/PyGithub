@@ -1323,7 +1323,7 @@ class Requester:
                 return self.__requestRaw(
                     cnx, verb, path, requestHeaders, input, stream=stream, follow_302_redirect=True
                 )
-            return status, responseHeaders, output
+            return status or 0, responseHeaders, output
         finally:
             # we record the time of this request after it finished
             # to defer next request starting from this request's end, not start
@@ -1440,7 +1440,6 @@ class WithRequester(Generic[T]):
     def requester(self) -> Requester:
         return self.__requester
 
-    def withRequester(self, requester: Requester) -> WithRequester[T]:
-        assert isinstance(requester, Requester), requester
+    def withRequester(self, requester: Any) -> WithRequester[T]:
         self.__requester = requester
         return self
