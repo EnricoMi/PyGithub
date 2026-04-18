@@ -94,6 +94,28 @@ please `open an issue <https://github.com/PyGithub/PyGithub/issues>`__.
 
         See :doc:`async` for a full explanation of what becomes awaitable.
 
+Async support
+~~~~~~~~~~~~~
+
+PyGithub also provides full async support via ``github.asyncio``::
+
+    import asyncio
+    from github.asyncio import Github
+    from github import Auth
+
+    async def main():
+        auth = Auth.Token("access_token")
+        g = Github(auth=auth)
+
+        async for repo in (await g.get_user()).get_repos():
+            print(await repo.name)
+
+        await g.close()
+
+    asyncio.run(main())
+
+See :doc:`async` for details on what becomes awaitable and how iteration works.
+
 Download and install
 --------------------
 
